@@ -40,6 +40,7 @@ Ferenci Tamás (<https://www.medstat.hu/>)
 - [Technikai részletek](#technikai-részletek)
 - [Továbbfejlesztési ötletek](#továbbfejlesztési-ötletek)
 - [Irodalmi hivatkozások](#irodalmi-hivatkozások)
+- [Acknowledgements](#acknowledgements)
 
 ## A többlethalálozási mutatóról általában
 
@@ -2507,3 +2508,17 @@ saveRDS(RawData, "RawData.rds")
   excess mortality calculations.” BMC Med Res Methodol. 2023 Oct
   18;23(1):239. DOI: 10.1186/s12874-023-02061-w.
   [Link](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-023-02061-w).
+
+## Acknowledgements
+
+Excess mortality monitor was developed as part of the National
+Laboratory for Health Security project, supported by the National
+Research, Development and Innovation Office, Hungary, grant
+RRF-2.3.1-21-2022-00006.
+
+<figure>
+<img src="logo.jpg"
+alt="National Laboratory for Health Security logo" />
+<figcaption aria-hidden="true">National Laboratory for Health Security
+logo</figcaption>
+</figure>

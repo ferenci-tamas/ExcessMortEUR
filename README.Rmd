@@ -1157,3 +1157,9 @@ saveRDS(RawData, "RawData.rds")
 - Rolando J Acosta, Rafael A Irizarry. "A Flexible Statistical Framework for Estimating Excess Mortality." Epidemiology. 2022 May 1;33(3):346-353. DOI: 10.1097/EDE.0000000000001445. [Link](https://journals.lww.com/epidem/Abstract/2022/05000/A_Flexible_Statistical_Framework_for_Estimating.6.aspx).
 - Tamás Ferenci. "Comparing methods to predict baseline mortality for excess mortality calculations." 
 BMC Med Res Methodol. 2023 Oct 18;23(1):239. DOI: 10.1186/s12874-023-02061-w. [Link](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-023-02061-w).
+
+## Acknowledgements
+
+Excess mortality monitor was developed as part of the National Laboratory for Health Security project, supported by the National Research, Development and Innovation Office, Hungary, grant RRF-2.3.1-21-2022-00006.
+
+![National Laboratory for Health Security logo](logo.jpg)
