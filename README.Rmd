@@ -21,8 +21,9 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = knitr::is_html_output(), fig.width = 12, fig.height = 6, dpi = 300,
-                      dev = "ragg_png")
+knitr::opts_chunk$set(
+  echo = knitr::is_html_output(), fig.width = 12,
+  fig.height = 6, dpi = 300, dev = "ragg_png")
 ```
 
 ```{r konyvtar, echo = FALSE}
@@ -34,6 +35,7 @@ theme_set(theme_bw())
 captionlab <- paste0("Ferenci Tamás, https://www.medstat.hu/\n",
                      "Adatok forrása: Eurostat, lekérdezés dátuma: ",
                      format(Sys.Date(), "%Y. %m. %d."))
+datebreak <- "2 months"
 ```
 
 ```{r adatbetoltes, message = FALSE, echo = FALSE}
@@ -263,7 +265,7 @@ Ez egy jól vizsgálható szituáció, mert a csehek egyetlen időpontban, konce
 
 Mit látunk? Azt, hogy ettől az intézkedéstől még mind a fertőzöttek száma, mind a halálozások száma vidáman nőtt tovább, mígnem a beszélt egy-két hét múlva a fertőzött-szám növekedése megállt (a felső tengelyen láthatóak az intézkedés bevezetése után eltelt napok száma). Igen ám, de a halottak száma még *ekkor is* teljesen változatlanul nőtt tovább, még jó egy-két hétig! Ez a járványkezelés tehetetlensége, és mellesleg egy nagyon fontos tanulsággal bír: a járványkezelésben nagyon veszélyes taktika, hogy megvárjuk, amíg elromlik a helyzet, és majd akkor lépünk, hiszen így fertőzöttek tekintetében még egy-két hétig, halálozásokban még akár több mint egy hónapig az eredeti trend szerint fogunk továbbhaladni! Amiből nagyon nagy baj is lehet, ha az egy gyorsan növekvő trend...
 
-A halálozási adat második problémája, hogy valójában nem csak a járvány terjedését méri, hiszen függ a halálozási aránytól is, tehát, hogy egy megfertőződött alany mekkora valószínűséggel hal meg. A halálozási adat lényegében egybeméri a kettőt! Ráadásul a halálozási arány két dologtól függ: a megfertőzödött alanyok általános állapotától (életkor, társbetegségek, kockázati tényezők mint a dohányzás stb.) és a gyógyítás hatásfokától. A probléma ezekből fakadóan hasonló, mint a fertőzöttek számánál és a tesztelési intenzitásnál: elképzelhető, hogy a halottak száma felmegy, de valójában nem romlott a fertőzési helyzet, csak mondjuk valamiért kiesett egy kórház az ellátásból és ezért túlterhelődött az egészségügyi rendszer, vagy épp fordítva, megjavul a halálozás, pedig nem a fertőződési helyzet vált jobbá, csak épp bevezettek egy új, hatásos gyógyszert. Elképzelhető, hogy javul a halálozás, pedig a fertőződési helyzet tökéletesen változatlan, csak a járvány fiatalabbak körére terjedt át, akik körében kisebb a halálozási arány. Itt is igaz, hogy nem csak egy ország különböző időpontjainak az összehasonlítása lehet problémás, mint az előző példákban, hanem a különböző országok még azonos időpontban rögzített adatainak is: még ha a kezelés hatásosságában nincs is nagy különbség, mert hasonló gyógyszerek, eljárások érhetőek el, a lakosok alap-állapotának az eltérése, például ha más a cukorbetegek aránya, akkor is különböző halálozási arányokhoz fog vezetni. (Mindezek lényegében a [confounding-ra](https://tamas-ferenci.github.io/FerenciTamas_AzOrvosiMegismeresModszertanaEsAzOrvosiKutatasokKritikusErtekelese/) jelentenek példát!) Enyhítheti ezt a problémát többek között, ha rétegzett adatokat használunk, tehát nem egybeöntve vetjük össze az adatokat, hanem például a cukorbetegekét hasonlítjuk a cukorbetegekével és a nem cukorbetegekét a nem cukorbetegekével -- ezzel kiküszöböljük az abból fakadó problémákat, ha a két országban eltérő a cukorbetegek aránya. A gyakorlatban azonban ilyen adatok ritkán elérhetőek, talán egyedül az életkor kivételével, szerencsére ez jól összefügg a krónikus betegségekkel is. A korspecifikus adatok használata egy országon belül is fontos lehet ha hosszabb távú trendeket szeretnénk vizsgálni, ahogy a fiatalok körében terjedő járvány példája is mutatja.
+A halálozási adat második problémája, hogy valójában nem csak a járvány terjedését méri, hiszen függ a halálozási aránytól is, tehát, hogy egy megfertőződött alany mekkora valószínűséggel hal meg. A halálozási adat lényegében egybeméri a kettőt! Ráadásul a halálozási arány két dologtól függ: a megfertőzödött alanyok általános állapotától (életkor, társbetegségek, kockázati tényezők mint a dohányzás stb.) és a gyógyítás hatásfokától. A probléma ezekből fakadóan hasonló, mint a fertőzöttek számánál és a tesztelési intenzitásnál: elképzelhető, hogy a halottak száma felmegy, de valójában nem romlott a fertőzési helyzet, csak mondjuk valamiért kiesett egy kórház az ellátásból és ezért túlterhelődött az egészségügyi rendszer, vagy épp fordítva, megjavul a halálozás, pedig nem a fertőződési helyzet vált jobbá, csak épp bevezettek egy új, hatásos gyógyszert. Elképzelhető, hogy javul a halálozás, pedig a fertőződési helyzet tökéletesen változatlan, csak a járvány fiatalabbak körére terjedt át, akik körében kisebb a halálozási arány. Itt is igaz, hogy nem csak egy ország különböző időpontjainak az összehasonlítása lehet problémás, mint az előző példákban, hanem a különböző országok még azonos időpontban rögzített adatainak is: még ha a kezelés hatásosságában nincs is nagy különbség, mert hasonló gyógyszerek, eljárások érhetőek el, a lakosok alap-állapotának az eltérése, például ha más a cukorbetegek aránya, akkor is különböző halálozási arányokhoz fog vezetni. (Mindezek lényegében a [confounding-ra](https://ferenci-tamas.github.io/orvosi-megismeres-modszertan/) jelentenek példát!) Enyhítheti ezt a problémát többek között, ha rétegzett adatokat használunk, tehát nem egybeöntve vetjük össze az adatokat, hanem például a cukorbetegekét hasonlítjuk a cukorbetegekével és a nem cukorbetegekét a nem cukorbetegekével -- ezzel kiküszöböljük az abból fakadó problémákat, ha a két országban eltérő a cukorbetegek aránya. A gyakorlatban azonban ilyen adatok ritkán elérhetőek, talán egyedül az életkor kivételével, szerencsére ez jól összefügg a krónikus betegségekkel is. A korspecifikus adatok használata egy országon belül is fontos lehet ha hosszabb távú trendeket szeretnénk vizsgálni, ahogy a fiatalok körében terjedő járvány példája is mutatja.
 
 Van azonban egy harmadik probléma, ami a mi mostani szempontunkból különösen fontos lesz: az, hogy ez a mutató támaszkodik a haláloki besorolásra. Hiszen a fertőzésben elhunytakról van szó, ehhez pedig valahogy definiálni kell, hogy kit tekintünk egyáltalán fertőzésben elhunyt személynek. A probléma az, hogy a haláloki besorolások általában is nagyon problémásak tudnak lenni. Érdemes ezt a kérdést részletesebben is megbeszélni, mert ez az, ami közvetlenül el fog vezetni a többlethalálozási mutató gondolatához.
 
@@ -444,7 +446,7 @@ ggplot(SimData, aes(x = year, y = fit*1000, ymin = lwr*1000, ymax = upr*1000)) +
   guides(color = "none")
 ```
 
-A probléma jól látható: ha az egész tartományt használjuk (ahogy a fentiekben tettük!), akkor egy nagyon enyhén emelkedő görbét kapunk, miközben szemre elég világos, hogy valami megváltozott a példaországban 2015-ben, ezért az új évre -- mivel az már a változás utáni érában van -- inkább egy erősen csökkenő görbéből kellene előrejeleznünk... Akkor tehát ne az összes adatot használjuk, csak az utolsó néhányat? De hogyan válasszuk meg, hogy hányat? Mi van, ha elrontjuk? Szerencsére van egy statisztikai módszertan, amivel ez a kérdés elkerülhető, ezt úgy hívják, hogy [spline-regresszió](https://tamas-ferenci.github.io/FerenciTamas_SimitasSplineRegresszioAdditivModellek/). Nagyon röviden összefoglalva, a spline-ok flexibilis görbék, olyan értelemben, hogy követik az adatokat, bármilyen mintázatot is mutassanak, így képesek bevenni a fenti ábrán látható "kanyarokat" is, de úgy, hogy az adatokban lévő alaptrendet próbálják megragadni, a véletlen, zajszerű ingadozás nélkül. Ez utóbbi azért fontos, mert így, ha meghosszabbítjuk őket, akkor a meghosszabbítás ezt az alaptrendet fogja tükrözni -- pont, ahogy nekünk kell. Ezzel a fenti dilemmánkat oldják meg: átadható nekik az összes adat, tehát nem kell -- potenciálisan hibásan -- meghatározni, hogy mikortól illesszünk görbét, de a meghosszabbításhoz mégis csak a valódi alaptrendet fogja használni, azaz egy ilyen esetben automatikus felismerve, hogy mi az adatsor végéből látszó trend.
+A probléma jól látható: ha az egész tartományt használjuk (ahogy a fentiekben tettük!), akkor egy nagyon enyhén emelkedő görbét kapunk, miközben szemre elég világos, hogy valami megváltozott a példaországban 2015-ben, ezért az új évre -- mivel az már a változás utáni érában van -- inkább egy erősen csökkenő görbéből kellene előrejeleznünk... Akkor tehát ne az összes adatot használjuk, csak az utolsó néhányat? De hogyan válasszuk meg, hogy hányat? Mi van, ha elrontjuk? Szerencsére van egy statisztikai módszertan, amivel ez a kérdés elkerülhető, ezt úgy hívják, hogy [spline-regresszió](https://ferenci-tamas.github.io/simitas-spline/). Nagyon röviden összefoglalva, a spline-ok flexibilis görbék, olyan értelemben, hogy követik az adatokat, bármilyen mintázatot is mutassanak, így képesek bevenni a fenti ábrán látható "kanyarokat" is, de úgy, hogy az adatokban lévő alaptrendet próbálják megragadni, a véletlen, zajszerű ingadozás nélkül. Ez utóbbi azért fontos, mert így, ha meghosszabbítjuk őket, akkor a meghosszabbítás ezt az alaptrendet fogja tükrözni -- pont, ahogy nekünk kell. Ezzel a fenti dilemmánkat oldják meg: átadható nekik az összes adat, tehát nem kell -- potenciálisan hibásan -- meghatározni, hogy mikortól illesszünk görbét, de a meghosszabbításhoz mégis csak a valódi alaptrendet fogja használni, azaz egy ilyen esetben automatikus felismerve, hogy mi az adatsor végéből látszó trend.
 
 A dolog persze itt sincs ingyen. A kulcskérdés a flexibilitás mértéke: ha nem túl flexibilis a spline, akkor közelít ahhoz, mintha az egész adatsorra egyenest húznánk, ha viszont túl flexibilis, akkor az adatokban lévő zajt is fel fogja venni az alaptrend helyett, és így a meghosszabbítás is esetleges lesz (azt fogja tükrözni, hogy az utolsó néhány pont épp kicsit lejjebb vagy feljebb volt-e).
 
@@ -455,21 +457,25 @@ diagpargrid <- CJ(tkpy = c(seq(5, 13, 2), 100), geo = unique(RawData$geo), it = 
                   ED = names(exclude_dates))
 diagpargrid <- diagpargrid[!(it==FALSE&tkpy!=5)]
 
-diagdat <- rbindlist(lapply(1:nrow(diagpargrid), function(i)
-  with(compute_expected2(RawData[geo==diagpargrid$geo[i]],
-                         exclude = exclude_dates[[diagpargrid$ED[i]]],
-                         include.trend = diagpargrid$it[i], 
-                         frequency = 52, # csak a trend-nél van jelentősége, de azt helyrerakjuk
-                         trend.knots.per.year = 1/diagpargrid$tkpy[i], keep.components = TRUE),
-       cbind(counts, ED = diagpargrid$ED[i], trend, trend_log_se, it = diagpargrid$it[i],
-             tkpy = diagpargrid$tkpy[i]))))
+diagdat <- rbindlist(lapply(1:nrow(diagpargrid), function(i) {
+  ce <- compute_expected2(RawData[geo==diagpargrid$geo[i]],
+                          exclude = exclude_dates[[diagpargrid$ED[i]]],
+                          include.trend = diagpargrid$it[i], 
+                          frequency = 52, # csak a trend-nél van jelentősége, de azt helyrerakjuk
+                          trend.knots.per.year = 1/diagpargrid$tkpy[i], keep.components = TRUE)
+  cbind(ce, ED = diagpargrid$ED[i],
+        trend = attr(ce, "components")$trend,
+        log_trend_se = attr(ce, "components")$log_trend_se,
+        it = diagpargrid$it[i],
+        tkpy = diagpargrid$tkpy[i])
+}))
 
 diagdat$par <- factor(ifelse(diagdat$it==FALSE, "Átlag",
                              ifelse(diagdat$tkpy==100, "Lineáris", diagdat$tkpy)),
                       levels = c("Átlag", "Lineáris", seq(5, 13, 2)))
 
-diagdat$lci <- exp(log(diagdat$trend) - qnorm(0.975)*diagdat$trend_log_se)
-diagdat$uci <- exp(log(diagdat$trend) + qnorm(0.975)*diagdat$trend_log_se)
+diagdat$lci <- exp(log(diagdat$trend) - qnorm(0.975)*diagdat$log_trend_se)
+diagdat$uci <- exp(log(diagdat$trend) + qnorm(0.975)*diagdat$log_trend_se)
 
 diagdat <- merge(diagdat, params[, .(geo, age, tkpy, it, Ref = TRUE)], all.x = TRUE)
 
@@ -483,7 +489,7 @@ ggplot() +
   labs(x = "Év", y = "Heti halálozás [fő/ezer fő/hét]", color = "Paraméter")
 ```
 
-Az ábra szépen illusztrálja az összes fenti megállapítást. Az 5-ös, de még a 7-es beállítás is túl flexibilis: azért fordulnak el az illesztett görbék lefelé, mert az utolsó év kicsit alacsonyabb adata is elég ahhoz, hogy megfordítsa őket (a túl nagy flexibilitás miatt követik az ilyen zajszerű ingadozásokat is). A 13-as paraméter viszont már túl kevéssé flexibilis: ez már a valóban változó alaptrendet sem tudja felvenni. Az átlaggal történő becslés pedig jelen esetben pláne teljesen félrevezető. A 9-es beállítás azonban tökéletesnek tűnik (és figyeljük meg, hogy nem kellett megadni, hogy honnan kezdve illesztünk, az összes adatot átadtuk, és mégis, annak ellenére adott jó extrapolációt, hogy volt egy trendforduló az adatokban!).
+Az ábra szépen illusztrálja az összes fenti megállapítást. Az 5-ös beállítás túl flexibilis: a végén lévő, egyetlen egy alacsonyabb pont is érezhetően lefelé fordítja a görbét (a túl nagy flexibilitás miatt követi az ilyen zajszerű ingadozásokat is). A 13-as paraméter viszont már túl kevéssé flexibilis: ez már a valóban változó alaptrendet sem tudja felvenni. Az átlaggal történő becslés pedig jelen esetben pláne teljesen félrevezető. A 9-es beállítás azonban tökéletesnek tűnik. Figyeljük meg a -- jól megválasztott paraméterű...! -- spline előnyét: nem kellett megadni, hogy honnan kezdve illesztünk, az összes adatot átadtuk, és mégis, annak ellenére adott jó extrapolációt, hogy volt egy trendforduló az adatokban.
 
 Nincs más hátra, mint minden országra meghatározni az optimális flexibilitási paramétert -- hiszen egyáltalán nem biztos, hogy ugyanaz az érték lesz jó mindenhol. Én ezt most a fentihez hasonló módon, tehát kézzel megnézve az illesztéseket hajtottam végre; ennek részleteit egy külön pontban mutatom be. A későbbi eredmények ezeken a beállításokon fognak alapulni.
 
@@ -500,7 +506,7 @@ ggplot() +
   labs(x = "Év", y = "Heti halálozás [fő/ezer fő/hét]", color = "Paraméter")
 ```
 
-Látható, hogy a helyzet nehezen megítélhető: elhisszük, hogy amit a végén látunk, az egy ténylegesen növekvőbe váltott trend (ez esetben a 9-es, ha nagyon bátrak vagyunk, a 7-es paraméter jöhet szóba), vagy azt gondoljuk, hogy itt különösebb trend nélküli véletlen szóródással van dolgunk (ez esetben a legbiztosabb a 13, tehát az egyenes illesztése)...? Nagyon fontos, hogy ilyen helyzetekben, ahol nem lehet egyértelműen választani, próbáljunk ki minden szóba jövő lehetőséget! Ezt hívják érzékenységvizsgálatnak; a későbbiekben külön pontban fogunk vele foglalkozni.
+Látható, hogy a helyzet nehezen megítélhető: elhisszük, hogy amit a végén látunk, az egy ténylegesen növekvőbe váltott trend (ez esetben például az 5-ös paraméter szóba jöhet), vagy azt gondoljuk, hogy itt különösebb trend nélküli véletlen szóródással van dolgunk (ez esetben a legbiztosabb a 13, tehát az egyenes illesztése, vagy akár az átlag)...? Nagyon fontos, hogy ilyen helyzetekben, ahol nem lehet egyértelműen választani, próbáljunk ki minden szóba jövő lehetőséget! Ezt hívják érzékenységvizsgálatnak; a későbbiekben külön pontban fogunk vele foglalkozni.
 
 Egy dolog mindenesetre biztos: nem szabad úgy elfogadni *semmilyen* paramétert, hogy előbb ne ellenőriztük le, például ilyen grafikus formában, a helyességét!
 
@@ -542,7 +548,7 @@ ggplot(melt(res[age=="TOTAL"&geo=="HU"&sens==FALSE&ED=="ExAnte"&model=="quasipoi
                                         `Acosta-Irizarry` = increase*100)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
   geom_line() + labs(x = "Dátum", y = "Százalékos többlet") +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
@@ -612,7 +618,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipois
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
@@ -645,7 +651,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values=c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Ex post kumulált\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0),
         legend.position = "bottom", legend.title = element_blank())
@@ -691,7 +697,7 @@ ggplot(res[age=="TOTAL"&(nuts_level==3|geo=="HU")&sens==FALSE&ED=="ExAnte"&
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
@@ -738,7 +744,7 @@ ggplot(res[geo=="HU"&age=="TOTAL"&ED=="ExAnte"&date<="2023-07-01",
        aes(x = date, y = excess/population*1e6, color = paste0(tkpy, ", ", model, " modell"))) +
   geom_line() + geom_hline(yintercept = 0, colour = "blue") +
   labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 ```
@@ -777,7 +783,7 @@ ggplot(melt(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipoi
                   `Regisztrált koronavírus-halálozás` = new_deaths/population*1e6)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
   geom_line() + labs(x = "", y = "Halálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 ```
@@ -815,7 +821,7 @@ p <- ggplot(melt(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="qua
                  id.vars = "date"), aes(x = date, y = value, group = variable, color = variable,
                                         label = round(value, -2))) + geom_line() +
   labs(x = "", y = "Halálozás [fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 p
@@ -841,7 +847,7 @@ A többlethalálozási adatok felhasználása kettős: járvány alatt fontos in
 
 Bár ez a kérdés már nem a többlethalálozás számításához kapcsolódik, szeretnék róla pár gondolatot leírni. Az első és legfontosabb, hogy ez a feladat, bár vitathatatlanul nagyon fontos, rendkívül nehéz is. A probléma az, hogy az országok milliónyi jellemzőben térnek el egymástól: ha meg is állapítjuk, hogy hol lett nagyobb a többlethalálozás, honnan tudjuk, hogy a milliónyi eltérés közül melyik az, ami ennek a hátterében van...? A probléma, hogy ezek az eltérések tipikusan egymással is összefüggnek. Mondjuk azt találjuk, hogy ahol több ápoló jut ezer lakosra, ott kisebb a többlethalálozás. Akkor tehát az ápolók száma csökkenti a halálozást? Kézenfekvő a gondolat, de mi van, ha ott, ahol több ápoló jut ezer lakosra, egyúttal kisebb a dohányzók aránya is? Akkor lehet, hogy az ápolóknak igazából nincs is semmi szerepe és a dohányzáson múlik a dolog? De mi van, ha ezekben az országokban a cukorbetegek aránya is kisebb? Akkor lehet, hogy egyiknek sincs valójában szerepe, és a dolog a cukorbetegségen múlik? Mi van, ha ezek mindegyike számít, valamilyen arányban...?
 
-Ezt a problémát hívják magyarul is általánosan használt angol szóval confounding-nak. (Angolul nagyon találó kifejezés: szó szerint "egybemosódást" jelent, és valóban arról van szó, hogy a különböző tényezők hatása egybemosódik, a több nővér egybemosódik a kevesebb cukorbeteggel.) A probléma általánosságából adódóan számos más területen fellép, orvostudománytól a közgazdaságig ([videó-előadás](https://www.youtube.com/watch?v=dYt6vqqdtYQ), [írott jegyzet](https://tamas-ferenci.github.io/FerenciTamas_AzOrvosiMegismeresModszertanaEsAzOrvosiKutatasokKritikusErtekelese/az-empirikus-megismer%C3%A9s-alapgondolata-%C3%A9s-a-confounding.html)).
+Ezt a problémát hívják magyarul is általánosan használt angol szóval confounding-nak. (Angolul nagyon találó kifejezés: szó szerint "egybemosódást" jelent, és valóban arról van szó, hogy a különböző tényezők hatása egybemosódik, a több nővér egybemosódik a kevesebb cukorbeteggel.) A probléma általánosságából adódóan számos más területen fellép, orvostudománytól a közgazdaságig ([videó-előadás](https://www.youtube.com/watch?v=dYt6vqqdtYQ), [írott jegyzet](https://ferenci-tamas.github.io/orvosi-megismeres-modszertan/alapok-confounding.html)).
 
 A gond itt súlyos, hiszen a sor az ilyen potenciális magyarázó változókra tényleg nagyon hosszan folytatható, miközben EU és EFTA országból mindössze 31 áll rendelkezésünkre! (Lejjebb mehetünk területileg, megyei szintre, és akkor több egységünk lesz, de ezt tudjuk a magyarázó változókkal is követni? Ismerjük megyénként is a cukorbetegek arányát? És az ezer lakosra jutó ápolók számát? Egyáltalán, értelmezhető ez megyei szinten...? Úgyhogy ilyenkor már nem csak adatelérhetőségi, de definíciós problémák is felmerülhetnek.)
 
@@ -849,9 +855,9 @@ A másik gondolat, amit megemlítenék, az a befolyásolhatóság kérdése. A t
 
 Egy dolgot világosan látni kell az olyan típusú elemzések kapcsán, amelyek különböző országokat hasonlítanak össze: amikor összehasonlítási alapot választunk, akkor kérdést is választunk, amire válaszolunk. Hasonlítsuk magunkat az összes európai országhoz, beleértve Nyugat-Európát? Vagy inkább csak a V4 országaihoz arra hivatkozva, hogy nekik hasonló a történeti hátterük mint nekünk? Azt kell megérteni, hogy egyik megközelítés sem "jó" vagy "rossz", egyszerűen más kérdésre válaszolnak: ha a V4-eket vesszük, mondván, hogy például az alkoholfogyasztók vagy dohányzók aránya nagyobb mint Nyugat-Európában, hozzánk hasonlóan, a posztszocialista múlt miatt, akkor egyszerűen kivesszük az alkoholfogyasztást és dohányzást a vizsgálatból. Ami lehet kimondottan szerencsés, ha azt mondjuk, hogy ezek hatásával szándékosan nem akarunk törődni (például mert azt mondjuk, hogy nem jellemzi a járványkezelés jóságát, márpedig mi azt akarjuk mérni -- ez egy teljesen legitim álláspont, valóban nem jelent rosszabb járványkezelést, ha valahol *csak* azért nagyobb a halálozás, mert több a dohányzó), de másik oldalról, így lehetetlenné tesszük, hogy észrevegyük, hogy ezekben a tényezőkben javítani kellene, ha a következő járványt jobban akarjuk átvészelni. Ezt csak akkor tudjuk kideríteni, ha a nyugati országokhoz is mérjük magunkat.
 
-Egy [másik esszémben](https://github.com/tamas-ferenci/GondolatokAJarvanyElleniVedekezesErtekeleserolEsAJarvanyHatasanakVizsgalatarol) részletesen kifejtem a fenti kérdések módszertani nehézségeit és megoldási lehetőségeit.
+Egy [másik esszémben](https://github.com/ferenci-tamas/GondolatokAJarvanyElleniVedekezesErtekeleserolEsAJarvanyHatasanakVizsgalatarol) részletesen kifejtem a fenti kérdések módszertani nehézségeit és megoldási lehetőségeit.
 
-Végezetül még egyetlen megjegyzés zárásként. A legkitűnőbb elemzés sem ér sokat, ha a közvélemény nem bízik meg annak megállapításaiban. Sokszor [elmondtam](https://github.com/tamas-ferenci/GondolatokAJarvanyugyiAdatokKozleserol), itt is megismétlem, hogy e bizalom egyik alapja és rendkívül fontos sarokköve a transzparencia, amely téren az ilyen elemzések is példát tudnak mutatni, ha a közvélemény számára is megismerhető, reprodukálható módon közlik őket, tartalmukat közérthetően elmagyarázzák, és őszinte, nyílt -- például: a limitációkra is kiterjedő -- kommunikáció kapcsolódik hozzájuk.
+Végezetül még egyetlen megjegyzés zárásként. A legkitűnőbb elemzés sem ér sokat, ha a közvélemény nem bízik meg annak megállapításaiban. Sokszor [elmondtam](https://github.com/ferenci-tamas/GondolatokAJarvanyugyiAdatokKozleserol), itt is megismétlem, hogy e bizalom egyik alapja és rendkívül fontos sarokköve a transzparencia, amely téren az ilyen elemzések is példát tudnak mutatni, ha a közvélemény számára is megismerhető, reprodukálható módon közlik őket, tartalmukat közérthetően elmagyarázzák, és őszinte, nyílt -- például: a limitációkra is kiterjedő -- kommunikáció kapcsolódik hozzájuk.
 
 Látható talán mindezekből, hogy a többlethalálozás számítása sok elemzéshez valójában csak az első lépés, a kiindulópont. De ez nem azt jelenti, hogy emiatt kisebb a súlya, ellenkezőleg: nem várható jó elemzés akkor, ha már a kiindulópont is hibás. Mint a fentiek is mutatják, az utána jövő kérdések -- amik már túlmutatnak e dolgozat keretein -- szintén nem könnyűek, és nem állítom, hogy adhatóak rájuk egyszerű válaszok, de azt biztosan állítom, hogy az ezeken való gondolkodás előbbre viszi az országot.
 
@@ -877,7 +883,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipois
   scale_color_manual(values=c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Aktuális többlethalálozás [%]", caption = captionlab) +
   geom_hline(yintercept = 0, colour = "blue") +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
@@ -914,7 +920,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Összesített többlethalálozás [%]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0),
         legend.position = "bottom", legend.title = element_blank())
@@ -983,7 +989,7 @@ ggplot(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED%in%c("ExPost", "Flu")&model=="q
                                                  "Influenza-szezonok kizárásával"))],
                         method = list("last.points", cex = 0.6)) +
   labs(x = "", y = "Halálozás [fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 ```
@@ -1125,6 +1131,7 @@ fwrite(res, "ExcessMortEUR_data.csv", sep = ";", dec = ",", row.names = FALSE)
 fwrite(resFull, "ExcessMortEUR_full_data.csv", sep = ";", dec = ",", row.names = FALSE)
 saveRDS(res, "res.rds")
 saveRDS(resFull, "resFull.rds")
+saveRDS(RawData, "RawData.rds")
 ```
 
 ## Továbbfejlesztési ötletek

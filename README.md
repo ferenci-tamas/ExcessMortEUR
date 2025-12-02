@@ -229,7 +229,7 @@ a kezelés hatásosságában nincs is nagy különbség, mert hasonló
 gyógyszerek, eljárások érhetőek el, a lakosok alap-állapotának az
 eltérése, például ha más a cukorbetegek aránya, akkor is különböző
 halálozási arányokhoz fog vezetni. (Mindezek lényegében a
-[confounding-ra](https://tamas-ferenci.github.io/FerenciTamas_AzOrvosiMegismeresModszertanaEsAzOrvosiKutatasokKritikusErtekelese/)
+[confounding-ra](https://ferenci-tamas.github.io/orvosi-megismeres-modszertan/)
 jelentenek példát!) Enyhítheti ezt a problémát többek között, ha
 rétegzett adatokat használunk, tehát nem egybeöntve vetjük össze az
 adatokat, hanem például a cukorbetegekét hasonlítjuk a cukorbetegekével
@@ -751,7 +751,7 @@ ne az összes adatot használjuk, csak az utolsó néhányat? De hogyan
 válasszuk meg, hogy hányat? Mi van, ha elrontjuk? Szerencsére van egy
 statisztikai módszertan, amivel ez a kérdés elkerülhető, ezt úgy hívják,
 hogy
-[spline-regresszió](https://tamas-ferenci.github.io/FerenciTamas_SimitasSplineRegresszioAdditivModellek/).
+[spline-regresszió](https://ferenci-tamas.github.io/simitas-spline/).
 Nagyon röviden összefoglalva, a spline-ok flexibilis görbék, olyan
 értelemben, hogy követik az adatokat, bármilyen mintázatot is
 mutassanak, így képesek bevenni a fenti ábrán látható “kanyarokat” is,
@@ -786,21 +786,25 @@ diagpargrid <- CJ(tkpy = c(seq(5, 13, 2), 100), geo = unique(RawData$geo), it = 
                   ED = names(exclude_dates))
 diagpargrid <- diagpargrid[!(it==FALSE&tkpy!=5)]
 
-diagdat <- rbindlist(lapply(1:nrow(diagpargrid), function(i)
-  with(compute_expected2(RawData[geo==diagpargrid$geo[i]],
-                         exclude = exclude_dates[[diagpargrid$ED[i]]],
-                         include.trend = diagpargrid$it[i], 
-                         frequency = 52, # csak a trend-nél van jelentősége, de azt helyrerakjuk
-                         trend.knots.per.year = 1/diagpargrid$tkpy[i], keep.components = TRUE),
-       cbind(counts, ED = diagpargrid$ED[i], trend, trend_log_se, it = diagpargrid$it[i],
-             tkpy = diagpargrid$tkpy[i]))))
+diagdat <- rbindlist(lapply(1:nrow(diagpargrid), function(i) {
+  ce <- compute_expected2(RawData[geo==diagpargrid$geo[i]],
+                          exclude = exclude_dates[[diagpargrid$ED[i]]],
+                          include.trend = diagpargrid$it[i], 
+                          frequency = 52, # csak a trend-nél van jelentősége, de azt helyrerakjuk
+                          trend.knots.per.year = 1/diagpargrid$tkpy[i], keep.components = TRUE)
+  cbind(ce, ED = diagpargrid$ED[i],
+        trend = attr(ce, "components")$trend,
+        log_trend_se = attr(ce, "components")$log_trend_se,
+        it = diagpargrid$it[i],
+        tkpy = diagpargrid$tkpy[i])
+}))
 
 diagdat$par <- factor(ifelse(diagdat$it==FALSE, "Átlag",
                              ifelse(diagdat$tkpy==100, "Lineáris", diagdat$tkpy)),
                       levels = c("Átlag", "Lineáris", seq(5, 13, 2)))
 
-diagdat$lci <- exp(log(diagdat$trend) - qnorm(0.975)*diagdat$trend_log_se)
-diagdat$uci <- exp(log(diagdat$trend) + qnorm(0.975)*diagdat$trend_log_se)
+diagdat$lci <- exp(log(diagdat$trend) - qnorm(0.975)*diagdat$log_trend_se)
+diagdat$uci <- exp(log(diagdat$trend) + qnorm(0.975)*diagdat$log_trend_se)
 
 diagdat <- merge(diagdat, params[, .(geo, age, tkpy, it, Ref = TRUE)], all.x = TRUE)
 
@@ -816,17 +820,17 @@ ggplot() +
 
 ![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-Az ábra szépen illusztrálja az összes fenti megállapítást. Az 5-ös, de
-még a 7-es beállítás is túl flexibilis: azért fordulnak el az illesztett
-görbék lefelé, mert az utolsó év kicsit alacsonyabb adata is elég ahhoz,
-hogy megfordítsa őket (a túl nagy flexibilitás miatt követik az ilyen
-zajszerű ingadozásokat is). A 13-as paraméter viszont már túl kevéssé
-flexibilis: ez már a valóban változó alaptrendet sem tudja felvenni. Az
-átlaggal történő becslés pedig jelen esetben pláne teljesen félrevezető.
-A 9-es beállítás azonban tökéletesnek tűnik (és figyeljük meg, hogy nem
+Az ábra szépen illusztrálja az összes fenti megállapítást. Az 5-ös
+beállítás túl flexibilis: a végén lévő, egyetlen egy alacsonyabb pont is
+érezhetően lefelé fordítja a görbét (a túl nagy flexibilitás miatt
+követi az ilyen zajszerű ingadozásokat is). A 13-as paraméter viszont
+már túl kevéssé flexibilis: ez már a valóban változó alaptrendet sem
+tudja felvenni. Az átlaggal történő becslés pedig jelen esetben pláne
+teljesen félrevezető. A 9-es beállítás azonban tökéletesnek tűnik.
+Figyeljük meg a – jól megválasztott paraméterű…! – spline előnyét: nem
 kellett megadni, hogy honnan kezdve illesztünk, az összes adatot
 átadtuk, és mégis, annak ellenére adott jó extrapolációt, hogy volt egy
-trendforduló az adatokban!).
+trendforduló az adatokban.
 
 Nincs más hátra, mint minden országra meghatározni az optimális
 flexibilitási paramétert – hiszen egyáltalán nem biztos, hogy ugyanaz az
@@ -852,10 +856,10 @@ ggplot() +
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Látható, hogy a helyzet nehezen megítélhető: elhisszük, hogy amit a
-végén látunk, az egy ténylegesen növekvőbe váltott trend (ez esetben a
-9-es, ha nagyon bátrak vagyunk, a 7-es paraméter jöhet szóba), vagy azt
-gondoljuk, hogy itt különösebb trend nélküli véletlen szóródással van
-dolgunk (ez esetben a legbiztosabb a 13, tehát az egyenes illesztése)…?
+végén látunk, az egy ténylegesen növekvőbe váltott trend (ez esetben
+például az 5-ös paraméter szóba jöhet), vagy azt gondoljuk, hogy itt
+különösebb trend nélküli véletlen szóródással van dolgunk (ez esetben a
+legbiztosabb a 13, tehát az egyenes illesztése, vagy akár az átlag)…?
 Nagyon fontos, hogy ilyen helyzetekben, ahol nem lehet egyértelműen
 választani, próbáljunk ki minden szóba jövő lehetőséget! Ezt hívják
 érzékenységvizsgálatnak; a későbbiekben külön pontban fogunk vele
@@ -935,7 +939,7 @@ ggplot(melt(res[age=="TOTAL"&geo=="HU"&sens==FALSE&ED=="ExAnte"&model=="quasipoi
                                         `Acosta-Irizarry` = increase*100)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
   geom_line() + labs(x = "Dátum", y = "Százalékos többlet") +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
@@ -1166,7 +1170,7 @@ adatokat, tehát a fenti ábra jobb szélét, a záráskor, 2023. júliusában
 
 Látható, hogy Magyarország a legkedvezőtlenebb harmad elején-közepén
 van. Hogy egy számszerű érték is szerepeljen: a kumulált
-többlethalálozásunk a járvány alatt ex post számításban 47700 fő volt.
+többlethalálozásunk a járvány alatt ex post számításban 50300 fő volt.
 
 Látványos lehet ugyanezeket az adatokat térképen is ábrázolni. Itt ugyan
 az értékeket nehezebb leolvasni, illetve összehasonlítani, hiszen egy
@@ -1282,7 +1286,7 @@ ggplot(res[geo=="HU"&age=="TOTAL"&ED=="ExAnte"&date<="2023-07-01",
        aes(x = date, y = excess/population*1e6, color = paste0(tkpy, ", ", model, " modell"))) +
   geom_line() + geom_hline(yintercept = 0, colour = "blue") +
   labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 ```
@@ -1352,7 +1356,7 @@ ggplot(melt(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipoi
                   `Regisztrált koronavírus-halálozás` = new_deaths/population*1e6)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
   geom_line() + labs(x = "", y = "Halálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 ```
@@ -1433,7 +1437,7 @@ p <- ggplot(melt(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="qua
                  id.vars = "date"), aes(x = date, y = value, group = variable, color = variable,
                                         label = round(value, -2))) + geom_line() +
   labs(x = "", y = "Halálozás [fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 p
@@ -1527,7 +1531,7 @@ tényezők hatása egybemosódik, a több nővér egybemosódik a kevesebb
 cukorbeteggel.) A probléma általánosságából adódóan számos más területen
 fellép, orvostudománytól a közgazdaságig
 ([videó-előadás](https://www.youtube.com/watch?v=dYt6vqqdtYQ), [írott
-jegyzet](https://tamas-ferenci.github.io/FerenciTamas_AzOrvosiMegismeresModszertanaEsAzOrvosiKutatasokKritikusErtekelese/az-empirikus-megismer%C3%A9s-alapgondolata-%C3%A9s-a-confounding.html)).
+jegyzet](https://ferenci-tamas.github.io/orvosi-megismeres-modszertan/alapok-confounding.html)).
 
 A gond itt súlyos, hiszen a sor az ilyen potenciális magyarázó
 változókra tényleg nagyon hosszan folytatható, miközben EU és EFTA
@@ -1573,14 +1577,14 @@ a tényezőkben javítani kellene, ha a következő járványt jobban akarjuk
 is mérjük magunkat.
 
 Egy [másik
-esszémben](https://github.com/tamas-ferenci/GondolatokAJarvanyElleniVedekezesErtekeleserolEsAJarvanyHatasanakVizsgalatarol)
+esszémben](https://github.com/ferenci-tamas/GondolatokAJarvanyElleniVedekezesErtekeleserolEsAJarvanyHatasanakVizsgalatarol)
 részletesen kifejtem a fenti kérdések módszertani nehézségeit és
 megoldási lehetőségeit.
 
 Végezetül még egyetlen megjegyzés zárásként. A legkitűnőbb elemzés sem
 ér sokat, ha a közvélemény nem bízik meg annak megállapításaiban.
 Sokszor
-[elmondtam](https://github.com/tamas-ferenci/GondolatokAJarvanyugyiAdatokKozleserol),
+[elmondtam](https://github.com/ferenci-tamas/GondolatokAJarvanyugyiAdatokKozleserol),
 itt is megismétlem, hogy e bizalom egyik alapja és rendkívül fontos
 sarokköve a transzparencia, amely téren az ilyen elemzések is példát
 tudnak mutatni, ha a közvélemény számára is megismerhető, reprodukálható
@@ -1617,7 +1621,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipois
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
@@ -1635,7 +1639,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipois
   scale_color_manual(values=c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Aktuális többlethalálozás [%]", caption = captionlab) +
   geom_hline(yintercept = 0, colour = "blue") +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
@@ -1686,7 +1690,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values=c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Ex post kumulált\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0),
         legend.position = "bottom", legend.title = element_blank())
@@ -1708,7 +1712,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Összesített többlethalálozás [%]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
   theme(plot.caption = element_text(face = "bold", hjust = 0),
         legend.position = "bottom", legend.title = element_blank())
@@ -1739,13 +1743,13 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
 Ami az említett különbségeket illeti, vegyük példának Szlovákiát és
 Lettországot. Szlovákia szűk háromszor nagyobb ország lélekszámban (5,5
 és 1,9 millió fő) és szűk háromszor annyi az abszolút többlethalálozása
-is (31100 és 12500). Ezért kerültek szinte pontosan egymás fölé: a
+is (31300 és 13200). Ezért kerültek szinte pontosan egymás fölé: a
 lélekszámra vetített többlethalálozásaik nagyon pontosan egyeznek. Igen
 ám, de Lettországban sokkal nagyobb a várt halandóság! A járvány
-időszaka alatt kumuláltan 90900 fő, míg Szlovákiában 178500 fő (ne
+időszaka alatt kumuláltan 90200 fő, míg Szlovákiában 178200 fő (ne
 felejtsük el, hogy Szlovákia majdnem háromszor akkora lélekszámmal bír).
 Ez az alapján sem meglepő, hogy Lettországban egyszerűen nagyobb a nyers
-halandóság, például a koronavírus-járványt megelőző 5 évben 14.7/1000
+halandóság, például a koronavírus-járványt megelőző 5 évben 14.6/1000
 fő/év, míg Szlovákiában csak 9.8/1000 fő/év. Azaz hiába halnak meg
 ugyanannyian lakosságarányosan, Szlovákiában úgy egyébként jóval
 kevesebb halálozás történik, így ugyanaz a – lakosságarányos – többlet
@@ -1897,7 +1901,7 @@ ggplot(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED%in%c("ExPost", "Flu")&model=="q
                                                  "Influenza-szezonok kizárásával"))],
                         method = list("last.points", cex = 0.6)) +
   labs(x = "", y = "Halálozás [fő]", caption = captionlab) +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
         legend.title = element_blank())
 ```
@@ -1942,7 +1946,7 @@ ggplot(melt(res[age=="TOTAL"&geo=="HU"&sens==FALSE&ED=="ExAnte"&model=="quasipoi
                                         `Acosta-Irizarry` = increase*100)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
   geom_line() + labs(x = "Dátum", y = "Százalékos többlet") +
-  scale_x_date(date_breaks = "months", labels = scales::label_date_short()) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
@@ -2003,8 +2007,8 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2025-01-28. A többlethalálozást
-számító csomag (`excessmort`) verziószáma 0.8.0.
+A számítások aktualizálásának dátuma: 2025-12-02. A többlethalálozást
+számító csomag (`excessmort`) verziószáma 0.8.1.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
 előkészületet:
@@ -2018,6 +2022,7 @@ theme_set(theme_bw())
 captionlab <- paste0("Ferenci Tamás, https://www.medstat.hu/\n",
                      "Adatok forrása: Eurostat, lekérdezés dátuma: ",
                      format(Sys.Date(), "%Y. %m. %d."))
+datebreak <- "2 months"
 ```
 
 A mortalitási adatokat az Eurostat-tól kérjük le (a `demo_r_mwk_ts`
@@ -2450,6 +2455,7 @@ fwrite(res, "ExcessMortEUR_data.csv", sep = ";", dec = ",", row.names = FALSE)
 fwrite(resFull, "ExcessMortEUR_full_data.csv", sep = ";", dec = ",", row.names = FALSE)
 saveRDS(res, "res.rds")
 saveRDS(resFull, "resFull.rds")
+saveRDS(RawData, "RawData.rds")
 ```
 
 ## Továbbfejlesztési ötletek
