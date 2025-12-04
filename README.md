@@ -788,16 +788,15 @@ diagpargrid <- CJ(tkpy = c(seq(5, 13, 2), 100), geo = unique(RawData$geo), it = 
 diagpargrid <- diagpargrid[!(it==FALSE&tkpy!=5)]
 
 diagdat <- rbindlist(lapply(1:nrow(diagpargrid), function(i) {
-  ce <- compute_expected2(RawData[geo==diagpargrid$geo[i]],
-                          exclude = exclude_dates[[diagpargrid$ED[i]]],
-                          include.trend = diagpargrid$it[i], 
-                          frequency = 52, # csak a trend-nél van jelentősége, de azt helyrerakjuk
-                          trend.knots.per.year = 1/diagpargrid$tkpy[i], keep.components = TRUE)
+  ce <- compute_expected(RawData[geo==diagpargrid$geo[i]],
+                         exclude = exclude_dates[[diagpargrid$ED[i]]],
+                         include.trend = diagpargrid$it[i], 
+                         frequency = 52, # csak a trend-nél van jelentősége, de azt helyrerakjuk
+                         trend.knots.per.year = 1/diagpargrid$tkpy[i], keep.components = TRUE)
   cbind(ce, ED = diagpargrid$ED[i],
         trend = attr(ce, "components")$trend,
         log_trend_se = attr(ce, "components")$log_trend_se,
-        it = diagpargrid$it[i],
-        tkpy = diagpargrid$tkpy[i])
+        it = diagpargrid$it[i], tkpy = diagpargrid$tkpy[i])
 }))
 
 diagdat$par <- factor(ifelse(diagdat$it==FALSE, "Átlag",
@@ -2008,8 +2007,8 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2025-12-02. A többlethalálozást
-számító csomag (`excessmort`) verziószáma 0.8.1.
+A számítások aktualizálásának dátuma: 2025-12-04. A többlethalálozást
+számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
 előkészületet:
@@ -2018,7 +2017,6 @@ előkészületet:
 library(data.table)
 library(excessmort)
 library(ggplot2)
-source("helper.R")
 theme_set(theme_bw())
 captionlab <- paste0("Ferenci Tamás, https://www.medstat.hu/\n",
                      "Adatok forrása: Eurostat, lekérdezés dátuma: ",
