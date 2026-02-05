@@ -595,15 +595,17 @@ A többlethalálozást eddig úgy kezeltük mint a tényleges és a várt halál
 
 A természetes ötlet a relatív mutatóra való áttérés, ezen belül is a legtermészetesebb gondolat az ország lélekszámával való leosztás; számos más esetben is szinte automatikusan ezt tesszük, ha országok közötti összehasonlítást szeretnénk végezni. (Például a fertőzött-számok vagy a halálozási számok esetében is!) Itt azonban nem biztos, hogy ez a legszerencsésebb választás. A probléma az, hogy a lélekszám érzéketlen arra, hogy mennyi az alaphalandóság az adott országban. Tekintsünk két, 10 milliós országot, amelyek egyikében évi 100, a másikban évi 150 ezer ember hal meg (mondjuk mert az utóbbiban több a krónikus beteg, vagy akár csak azért, mert idősebbek a lakosok). Ez esetben ugyanannyi abszolút többlethalálozás, relatívvá téve, ugyanolyan eredményre vezet, noha az ember azt érzi, hogy adott többlethalál jobban számít az első országnál, mint a másodiknál. Éppen ezért gyakran a többlethalálozások számát nem a lakosság számára, hanem a várt halálozás-számra osztják rá. Ez egyfelől ugyan bevisz a dologba egy plusz bizonytalanságot, hiszen egy becsült, bizonytalansággal terhelt értékkel osztunk, de cserében van egy előnye: mivel a várt érték már *eleve* tükrözi az ország alaphalandóságát, és így minden azt befolyásoló tényezőt (kezdve a korfával, de nyugodtan felsorolhatjuk a krónikus betegségeket, a környezeti tényezőket, szociális viszonyokat, egészségügyi ellátórendszert stb.), így a hányadossal kapott relatív érték nagyon jól összehasonlítható lesz országok között, még akkor is, ha ezek a tényezők eltérnek (mint ahogy nagyon is el fognak térni minden valós esetben). Az persze egy -- nagyon is fontos -- külön kérdés lehet, hogy célunk-e egyáltalán az ilyen tényezők hatásától való megszabadulás; erre a problémára még visszatérünk a későbbiekben.
 
-## Eredmények
+## A koronavírus-járványra vonatkozó eredmények
 
 ### A hazai többlethalálozási adatok, és európai viszonyításuk
 
-Ebben a pontban közlöm a fent felvázolt eljárással kapott eredményeket. Minden technikai részlet (beleértve az adatforrást, az adatok előkészítését, valamint az összes, számítást végző kódot, melyek együtt -- a nyílt tudomány jegyében -- teljesen reprodukálhatóvá teszik munkámat) a függelékben olvasható.
+Ebben a pontban közlöm a fent felvázolt eljárással kapott eredményeket a koronavírus-járványra vonatkozóan. A módszer természetesen ezt követően is alkalmazható, sőt, kimondottan hasznos az alkalmazása (egyfajta folytatódó monitoringként); ezt a következő pontban fogom bemutatni.
+
+Minden technikai részlet (beleértve az adatforrást, az adatok előkészítését, valamint az összes, számítást végző kódot, melyek együtt -- a nyílt tudomány jegyében -- teljesen reprodukálhatóvá teszik munkámat) a függelékben olvasható.
 
 Az eredmények megadásához nem év alapú mutatókat használok (bár néha ezt is szokták, de valójában természetesen semmilyen kitüntetett járványügyi jelentősége nincs a december 31-nek, hogy akkor vágjuk el az adatokat), hanem egyszerűen folytonosan kezeljük az időt. Másrészt, relatív mutató gyanánt a lélekszámmal osztott változatot használom, így ugyanis egy olyan mutatót kapunk, ami analóg a regisztrált halálozások közlésével, hiszen azt is halál / millió főben szokták megadni (de később kitérek a másik lehetőségre, a várt halálozásra történő ráosztásra is).
 
-Minden adatközlést 2023. július 1-én zárunk (természetesen, ahogy már volt róla szó, az ex post számításokhoz fontosak a későbbi adatok is, tehát a "zárás" itt az adatmegjelenítés végét jelenti).
+Minden adatközlést 2023. július 1-én zárunk ebben a pontban (természetesen, ahogy már volt róla szó, az ex post számításokhoz fontosak a későbbi adatok is, tehát a "zárás" itt az adatmegjelenítés végét jelenti).
 
 Mit tudunk mondani egy adott időpontban aktuális helyzetről? E kérdés megválaszolásához jobban passzolnak az ex ante adatok: ezt tudhattuk a járvány közben! Ezt mutatják a heti adatok (piros görbe Magyarország, a szürke görbék a többi európai országot jelölik):
 
@@ -838,6 +840,70 @@ p + geom_point(data = data.frame(x = c(as.Date("2020-12-31"), as.Date("2021-12-3
 Mint látszik, érdemi különbség 2020-ban nincs, 2021-ben és 2022-ben pedig egy kisebb eltérés alakult ki: a napi gyorsjelentett halálozások száma némileg a halottvizsgálati szám fölé kerül, ám a különbség nem jelentős (2022-ig összesítve a jelentett halálozás `r format(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"&date=="2022-12-26"]$cumnewdeaths, scientific = FALSE)` fő, a halottvizsgálati érték `r format(8981 + 24838 + 7685, scientific = FALSE)` fő, tehát a különbség `r round((res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"&date=="2022-12-26"]$cumnewdeaths/(8981 + 24838 + 7685)-1)*100, 1)`%). Ez fontos abból a szempontból, hogy cáfolja azt a vélekedést, miszerint a gyors regisztrálás "boldog-boldogtalant" koronavírusos halottnak sorol, szemben a precíz besorolással. Sajnos, mint volt is róla szó, a precíz, HVB szerinti adatokat mindig csak a következő évben tudjuk meg (és nem is az elején).
 
 Megjegyzendő, hogy -- bármennyire is kézenfekvőnek tűnik, és csakugyan fontos is lenne -- megyei szinten a kétféle adat nem vethető össze, mivel Magyarországon nincs és nem is volt nyilvános adatközlés a halálozások területi eloszlásáról, még megyei szinten sem. A fertőzöttekről ugyan volt nyilvános adat (más kérdés, hogy olyan módon, hogy a számokat egy képfájlra (!) írták fel...), de annak összevetése még kérdésesebb, hiszen -- mint már volt róla korábban is szó -- ott közrejátszik a halálozási arány is, ami miatt ez a kapcsolat nagyon áttételes.
+
+## Folytatódó, közel-valós-idejű monitoring
+
+A fenti módszerek természetesen ugyanúgy használhatóak a járvány után is, sőt, futtathatóak úgy általában bármikor, folyamatosan is. Érdemes is ezt tenni, hiszen egyfajta monitoring-ot jelent, amivel tudjuk detektálni a potenciálisan figyelmet érdemlő mortalitási megugrásokat, eltéréseket. Azért hívtam "közel" valós idejűnek, mert a folyamatos futtatás nem változtat azon a tényen, hogy az adatok beérkezésének több hét késése van, így a kapott eredményekben is mindenképp lesz egy ekkora késleltetés.
+
+Egyetlen megjegyzés mielőtt belevágunk: az ilyen monitoring szükségképp ex ante jellegű, értelemszerűen, úgyhogy itt nincs ilyen kérdés. (A programkódokban ugyan az `ExPost` megnevezés van, ha valaki megnézi, de ez ne zavarjon meg senkit: ez a koronavírus-járványra vonatkozik, tehát azért ex post, mert benne van a járvány utáni időszak is -- a járvány utáni időszakban viszont ez az ex ante.)
+
+Nézzük először a Magyarországra vonatkozó eredményeket:
+
+```{r, echo = FALSE}
+ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson" & geo == "HU"],
+       aes(x = date, y = excess/population*1e6)) +
+  geom_line() +
+  geom_hline(yintercept = 0, color = "blue") +
+  labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
+  theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
+        legend.title = element_blank())
+```
+
+Természetesen itt is mellétehetjük az európai összehasonlítást (és ez hasznos is, mert egyfajta viszonyítási alapként szolgál, láthatóvá teszi, hogy ha valamilyen eltérést detektálunk, az csak nálunk van-e jelen):
+
+```{r, echo = FALSE}
+ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"],
+       aes(x = date, y = excess/population*1e6, group = geo, label = geo)) +
+  geom_line(aes(color = geo=="HU",
+                group = forcats::fct_reorder(geo, geo=="HU", .fun = first))) +
+  geom_hline(yintercept = 0, color = "blue") +
+  scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
+  labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
+  directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
+  theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
+        legend.title = element_blank())
+```
+
+A jobb láthatóság kedvéért itt is megnézhetjük az országokat külön-külön:
+
+```{r, fig.height = 10, echo = FALSE}
+ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"],
+       aes(x = date, y = excess/population*1e6, group = geo)) + geom_line() +
+  labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
+  coord_cartesian(xlim = c(as.Date("2020-01-01"), NA)) +
+  scale_x_date(date_breaks = "years", labels = scales::label_date_short()) + facet_wrap(~geo) +
+  geom_hline(yintercept = 0, colour = "blue") +
+  theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
+        legend.title = element_blank())
+```
+
+A helyzet megyei szinten:
+
+```{r, echo = FALSE}
+ggplot(res[age=="TOTAL"&(nuts_level==3|geo=="HU")&sens==FALSE&ED=="ExPost"&model=="quasipoisson"],
+       aes(x = date, y = excess/population*1e6, group = geoname, label = geoname)) +
+  geom_line(aes(color = geo=="HU",
+                group = forcats::fct_reorder(geo, geo=="HU", .fun = first))) +
+  geom_hline(yintercept = 0, colour = "blue") +
+  scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
+  labs(x = "", y = "Ex ante aktuális\ntöbblethalálozás [fő/1M fő]", caption = captionlab) +
+  scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
+  directlabels::geom_dl(method = list("last.points", cex = 0.6)) +
+  theme(plot.caption = element_text(face = "bold", hjust = 0), legend.position = "bottom",
+        legend.title = element_blank())
+```
 
 ## Záró gondolatok
 

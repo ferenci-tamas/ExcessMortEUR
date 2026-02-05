@@ -23,12 +23,15 @@ Ferenci Tamás (<https://www.medstat.hu/>)
   - [Ex ante és ex post
     többlethalálozás](#ex-ante-és-ex-post-többlethalálozás)
   - [Relatív és abszolút eredmények](#relatív-és-abszolút-eredmények)
-- [Eredmények](#eredmények)
+- [A koronavírus-járványra vonatkozó
+  eredmények](#a-koronavírus-járványra-vonatkozó-eredmények)
   - [A hazai többlethalálozási adatok, és európai
     viszonyításuk](#a-hazai-többlethalálozási-adatok-és-európai-viszonyításuk)
   - [Érzékenységvizsgálat](#érzékenységvizsgálat)
   - [Összevetés a jelentett
     halálozással](#összevetés-a-jelentett-halálozással)
+- [Folytatódó, közel-valós-idejű
+  monitoring](#folytatódó-közel-valós-idejű-monitoring)
 - [Záró gondolatok](#záró-gondolatok)
 - [Függelék](#függelék)
   - [A kétféle relatív mutató
@@ -1113,11 +1116,15 @@ persze egy – nagyon is fontos – külön kérdés lehet, hogy célunk-e
 egyáltalán az ilyen tényezők hatásától való megszabadulás; erre a
 problémára még visszatérünk a későbbiekben.
 
-## Eredmények
+## A koronavírus-járványra vonatkozó eredmények
 
 ### A hazai többlethalálozási adatok, és európai viszonyításuk
 
-Ebben a pontban közlöm a fent felvázolt eljárással kapott eredményeket.
+Ebben a pontban közlöm a fent felvázolt eljárással kapott eredményeket a
+koronavírus-járványra vonatkozóan. A módszer természetesen ezt követően
+is alkalmazható, sőt, kimondottan hasznos az alkalmazása (egyfajta
+folytatódó monitoringként); ezt a következő pontban fogom bemutatni.
+
 Minden technikai részlet (beleértve az adatforrást, az adatok
 előkészítését, valamint az összes, számítást végző kódot, melyek együtt
 – a nyílt tudomány jegyében – teljesen reprodukálhatóvá teszik munkámat)
@@ -1132,9 +1139,10 @@ olyan mutatót kapunk, ami analóg a regisztrált halálozások közlésével,
 hiszen azt is halál / millió főben szokták megadni (de később kitérek a
 másik lehetőségre, a várt halálozásra történő ráosztásra is).
 
-Minden adatközlést 2023. július 1-én zárunk (természetesen, ahogy már
-volt róla szó, az ex post számításokhoz fontosak a későbbi adatok is,
-tehát a “zárás” itt az adatmegjelenítés végét jelenti).
+Minden adatközlést 2023. július 1-én zárunk ebben a pontban
+(természetesen, ahogy már volt róla szó, az ex post számításokhoz
+fontosak a későbbi adatok is, tehát a “zárás” itt az adatmegjelenítés
+végét jelenti).
 
 Mit tudunk mondani egy adott időpontban aktuális helyzetről? E kérdés
 megválaszolásához jobban passzolnak az ex ante adatok: ezt tudhattuk a
@@ -1484,6 +1492,44 @@ képfájlra (!) írták fel…), de annak összevetése még kérdésesebb, hisz
 – mint már volt róla korábban is szó – ott közrejátszik a halálozási
 arány is, ami miatt ez a kapcsolat nagyon áttételes.
 
+## Folytatódó, közel-valós-idejű monitoring
+
+A fenti módszerek természetesen ugyanúgy használhatóak a járvány után
+is, sőt, futtathatóak úgy általában bármikor, folyamatosan is. Érdemes
+is ezt tenni, hiszen egyfajta monitoring-ot jelent, amivel tudjuk
+detektálni a potenciálisan figyelmet érdemlő mortalitási megugrásokat,
+eltéréseket. Azért hívtam “közel” valós idejűnek, mert a folyamatos
+futtatás nem változtat azon a tényen, hogy az adatok beérkezésének több
+hét késése van, így a kapott eredményekben is mindenképp lesz egy ekkora
+késleltetés.
+
+Egyetlen megjegyzés mielőtt belevágunk: az ilyen monitoring szükségképp
+ex ante jellegű, értelemszerűen, úgyhogy itt nincs ilyen kérdés. (A
+programkódokban ugyan az `ExPost` megnevezés van, ha valaki megnézi, de
+ez ne zavarjon meg senkit: ez a koronavírus-járványra vonatkozik, tehát
+azért ex post, mert benne van a járvány utáni időszak is – a járvány
+utáni időszakban viszont ez az ex ante.)
+
+Nézzük először a Magyarországra vonatkozó eredményeket:
+
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+Természetesen itt is mellétehetjük az európai összehasonlítást (és ez
+hasznos is, mert egyfajta viszonyítási alapként szolgál, láthatóvá
+teszi, hogy ha valamilyen eltérést detektálunk, az csak nálunk van-e
+jelen):
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+A jobb láthatóság kedvéért itt is megnézhetjük az országokat
+külön-külön:
+
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+A helyzet megyei szinten:
+
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
 ## Záró gondolatok
 
 A többlethalálozási adatok felhasználása kettős: járvány alatt fontos
@@ -1627,7 +1673,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipois
         legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Ugyanez akkor, ha a várt halálozásra vetítünk:
 
@@ -1696,7 +1742,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
         legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 Kérdés, hogy mi a helyzet a várt értékre vetített mutatóval. A probléma
 a kumulálás, hiszen a százalékok természetesen nem adhatóak egyszerűen
@@ -1738,7 +1784,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
         legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 Ami az említett különbségeket illeti, vegyük példának Szlovákiát és
 Lettországot. Szlovákia szűk háromszor nagyobb ország lélekszámban (5,5
@@ -1950,7 +1996,7 @@ ggplot(melt(res[age=="TOTAL"&geo=="HU"&sens==FALSE&ED=="ExAnte"&model=="quasipoi
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 Ezen felül megengedhető, hogy szakadás legyen benne (ha egy jól
 meghatározott esemény-időpont van, ahol a mortalitás-eltérés kezdődik).
@@ -2007,7 +2053,7 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2026-01-26. A többlethalálozást
+A számítások aktualizálásának dátuma: 2026-02-05. A többlethalálozást
 számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
@@ -2299,7 +2345,7 @@ ggplot() +
   guides(linewidth = "none")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Ahol több vastag görbe is van, ott nem volt egyértelmű a választás, ez
 esetben a számítást – érzékenységvizsgálat gyanánt – minden esetre
