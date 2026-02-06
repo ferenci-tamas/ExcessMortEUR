@@ -30,7 +30,7 @@ Ferenci Tamás (<https://www.medstat.hu/>)
   - [Érzékenységvizsgálat](#érzékenységvizsgálat)
   - [Összevetés a jelentett
     halálozással](#összevetés-a-jelentett-halálozással)
-- [Folytatódó, közel-valós-idejű
+- [Folytatódó, közel valós idejű
   monitoring](#folytatódó-közel-valós-idejű-monitoring)
 - [Záró gondolatok](#záró-gondolatok)
 - [Függelék](#függelék)
@@ -1492,7 +1492,7 @@ képfájlra (!) írták fel…), de annak összevetése még kérdésesebb, hisz
 – mint már volt róla korábban is szó – ott közrejátszik a halálozási
 arány is, ami miatt ez a kapcsolat nagyon áttételes.
 
-## Folytatódó, közel-valós-idejű monitoring
+## Folytatódó, közel valós idejű monitoring
 
 A fenti módszerek természetesen ugyanúgy használhatóak a járvány után
 is, sőt, futtathatóak úgy általában bármikor, folyamatosan is. Érdemes
@@ -1532,26 +1532,27 @@ A helyzet megyei szinten:
 
 ## Záró gondolatok
 
-A többlethalálozási adatok felhasználása kettős: járvány alatt fontos
-információforrást jelentenek az aktuális helyzet nyomonkövetésére,
-járvány után pedig a történtek kiértékelésére (természetesen mindkét
-esetben a felvázolt korlátok figyelembevételével). Az előbbi esetben
-tipikusan a trendeket nézzük, hogy romlik-e vagy javul a helyzet,
-mennyire – ez magyarul azt jelenti, hogy országon *belül* hasonlítunk
-össze (ugyanazon ország különböző időpontbeli adatait hasonlítjuk
-egymáshoz). A második helyzetben viszont gyakoribb, hogy országok
-*között* hasonlítunk össze – hol lett nagyobb a többlethalálozás, és hol
-lett kisebb? Ez utóbbi célja általában a tulajdonítás, az attribúció:
-annak feltárása, hogy milyen tényezők vezettek a jobb vagy éppen
-rosszabb eredményhez, annak megmagyarázása, hogy ahol jobb lett az
-eredmény ott miért lett jobb és ahol rosszabb lett, ott miért lett
-rosszabb. Azt feltételezzük ugyanis, hogy ahol jobb lett az eredmény,
-ott valamit jól csináltak, vagy valamilyen körülmény szerencsésebb volt,
-így egy ilyen vizsgálat segít feltárni, hogy milyen körülmény volt
-szerencsésebb, vagy mit csináltak jól, ami a kisebb halálozáshoz
-vezetett. Ennek megértése elsőrangú kérdés, hiszen segíthet a tanulságok
-levonásában, a tanulásban, és ami talán még fontosabb: ezek révén abban,
-hogy a jövőben jobb eredményt érjünk el egy járvány kezelésében.
+A többlethalálozási adatok járványhoz kapcsolódó felhasználása kettős:
+járvány alatt fontos információforrást jelentenek az aktuális helyzet
+nyomonkövetésére, járvány után pedig a történtek kiértékelésére
+(természetesen mindkét esetben a felvázolt korlátok
+figyelembevételével). Az előbbi esetben tipikusan a trendeket nézzük,
+hogy romlik-e vagy javul a helyzet, mennyire – ez magyarul azt jelenti,
+hogy országon *belül* hasonlítunk össze (ugyanazon ország különböző
+időpontbeli adatait hasonlítjuk egymáshoz). A második helyzetben viszont
+gyakoribb, hogy országok *között* hasonlítunk össze – hol lett nagyobb a
+többlethalálozás, és hol lett kisebb? Ez utóbbi célja általában a
+tulajdonítás, az attribúció: annak feltárása, hogy milyen tényezők
+vezettek a jobb vagy éppen rosszabb eredményhez, annak megmagyarázása,
+hogy ahol jobb lett az eredmény ott miért lett jobb és ahol rosszabb
+lett, ott miért lett rosszabb. Azt feltételezzük ugyanis, hogy ahol jobb
+lett az eredmény, ott valamit jól csináltak, vagy valamilyen körülmény
+szerencsésebb volt, így egy ilyen vizsgálat segít feltárni, hogy milyen
+körülmény volt szerencsésebb, vagy mit csináltak jól, ami a kisebb
+halálozáshoz vezetett. Ennek megértése elsőrangú kérdés, hiszen segíthet
+a tanulságok levonásában, a tanulásban, és ami talán még fontosabb: ezek
+révén abban, hogy a jövőben jobb eredményt érjünk el egy járvány
+kezelésében.
 
 Bár ez a kérdés már nem a többlethalálozás számításához kapcsolódik,
 szeretnék róla pár gondolatot leírni. Az első és legfontosabb, hogy ez a
@@ -2053,7 +2054,7 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2026-02-05. A többlethalálozást
+A számítások aktualizálásának dátuma: 2026-02-06. A többlethalálozást
 számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
@@ -2297,11 +2298,59 @@ egyetlen országnál, és minimális számban.)
 
 Ez a tábla minden év január 1-re vonatkozóan tartalmazza a
 lélekszámokat, ebből úgy kapjuk meg az egyes hetek adatait, hogy egy
-spline illesztünk rá, és abból kérjük le a megfelelő napokat. Ehhez az
-`mgcv` csomagot használjuk; a dátumot pedig numerikussá kell
-alakítanunk, hogy át tudjuk adni magyarázó változóként. Ha ezzel a
-számítással végezve megvannak a heti lélekszám-adataink, azt
-összekapcsoljuk a halálozási táblával:
+spline-t illesztünk rá, és abból kérjük le a megfelelő napokat. Ennek
+igazából két célja is van. Egyrészt az ismert lélekszámokkal lefedett
+tartományban a finomítás (interpoláció): ha 2025. január 1. az utolsó
+ismert lélekszám adat, akkor a 2024-es – és korábbi – évek adatait jól
+tudjuk közelíteni, hiszen ha érdekel minket 2024 év mondjuk 23. hete,
+akkor az ismert 2024. január 1. és 2025. január 1. adatokat összekötve
+le tudunk olvasni egy – vélhetően jó, hiszen a lélekszám nem változik
+olyan nagyon gyorsan – közelítést. Annyi, hogy valójában nem egyszerűen
+összekötjük, tehát nem lineárisan interpolálunk, hanem spline-nal, ami
+remélhetőleg csak még jobb eredményt ad. De mi a helyzet 2025 év 23.
+hetével? Ott ugyanis a 2025. január 1. adatot nincs mihez kötni, amikor
+a 2026. január 1-et még nem ismerjük. Itt jön elő a spline másik előnye:
+ez csak a lineáris interpolációnál probléma (itt gond az, hogy az
+egyenes másik végét nincs mihez kötni), a spline azonban gond nélkül tud
+ilyenre is extrapolációt adni. (Sőt, valójában a spline esetében a
+használat szempontjából nem is különbözik az interpoláció és az
+extrapoláció, egyszerűen egy predikciót kell kérni a megbecsült
+spline-modellből.) Természetesen az extrapoláció annál veszélyesebb,
+minél távolabbra megyünk időben, de itt enyhíti a helyzetet, hogy – a
+fent mondottakból adódóan – itt legfeljebb egy év előrevetítésre van
+szükség, mivel egy év késleltetés után már ismertté válnak a január 1-es
+lélekszám-adatok.
+
+A spline-os megvalósításhoz az `mgcv` csomagot használjuk; a dátumot
+pedig numerikussá kell alakítanunk, hogy át tudjuk adni magyarázó
+változóként. Ami fontos, hogy a spline-nak (épp ahogy a fő kérdésünk
+kapcsán láttuk!) kockázata is van: vigyázni kell arra, nehogy rossz
+legyen az illeszkedés. Éppen ezért illik ezt megnézni, az interpoláció
+jóságát és az extrapolációét is; például Magyarország esetében:
+
+``` r
+ggplot(melt(rbind(
+  PopData[geo%in%unique(RawData$geo),
+          .(geo, age, date = TIME_PERIOD,
+            population = values, Type = "Actual")],
+  PopData[geo%in%unique(RawData$geo),
+          .(date = unique(RawData$date),
+            population = as.numeric(predict(
+              mgcv::gam(values ~ s(numdate)),
+              data.frame(numdate = as.numeric(unique(RawData$date)-
+                                                as.Date("1960-01-01"))))),
+            Type = "Predicted"),
+          .(geo, age)]),
+  id.vars = c("geo", "age", "date", "population"))[geo == "HU"],
+  aes(x = date, y = population, color = value)) +
+  facet_wrap(~ age, scales = "free") +
+  geom_line()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+Miután ilyan módon megvannak az – ellenőrzött – heti lélekszám-adataink,
+azt összekapcsoljuk a halálozási táblával:
 
 ``` r
 RawData <- merge(RawData,
@@ -2345,7 +2394,7 @@ ggplot() +
   guides(linewidth = "none")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 Ahol több vastag görbe is van, ott nem volt egyértelmű a választás, ez
 esetben a számítást – érzékenységvizsgálat gyanánt – minden esetre
@@ -2418,7 +2467,7 @@ leszűrjük a járvány időszakára:
 ``` r
 res <- merge(res, RawData, by = c("geo", "age", "date"))
 res <- res[order(geo, age, date, tkpy, it, sens, ED, model)]
-res <- res[date>=as.Date("2020-03-01")]
+res <- res[date >= as.Date("2020-03-01")]
 ```
 
 Kiszámoljuk a – járvány eleje óta – kumulált többletet és kumulált várt
