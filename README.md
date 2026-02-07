@@ -1503,32 +1503,60 @@ futtatás nem változtat azon a tényen, hogy az adatok beérkezésének több
 hét késése van, így a kapott eredményekben is mindenképp lesz egy ekkora
 késleltetés.
 
-Egyetlen megjegyzés mielőtt belevágunk: az ilyen monitoring szükségképp
-ex ante jellegű, értelemszerűen, úgyhogy itt nincs ilyen kérdés. (A
-programkódokban ugyan az `ExPost` megnevezés van, ha valaki megnézi, de
-ez ne zavarjon meg senkit: ez a koronavírus-járványra vonatkozik, tehát
-azért ex post, mert benne van a járvány utáni időszak is – a járvány
-utáni időszakban viszont ez az ex ante.)
+Mielőtt belevágunk, érdemes végiggondolni azt a kérdést, hogy egy ilyen
+monitoring milyen jellegű: ex ante vagy ex post? A végén természetesen
+ex ante kell legyen, értelemszerűen, ott nincs ilyen kérdés (hiszen ott
+biztosan nincs jövőre vonatkozó adatunk). A programkódokban ugyan az
+`ExPost` megnevezés van, ha valaki megnézi, de ez ne zavarjon meg
+senkit: az `ExPost` elnevezés azt jelenti, amikor a járvány időszakát
+vesszük ki a baseline becsléséből. Ez a járvány előtt és alatt ex post
+jelleget ad a becslésnek (hiszen akkor még nem tudhattuk, hogy mi a
+járvány időszaka!), a járvány után viszont ettől még ex ante a
+becslésünk.
 
 Nézzük először a Magyarországra vonatkozó eredményeket:
 
 ![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+Természetesen, ez esetben nem csak a járvány után folytatódik tovább a
+görbe, hanem előtte is ugyanúgy megrajzolható! A hosszabb intervallum
+miatt talán jobban látható, ha itt is szétszedjük évente:
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+Ha monitorizálásra használjuk ezt, akkor logikus a végére ránagyítani,
+hiszen itt, a legvégén keletkező új adatoknál nézzük, hogy van-e
+valamilyen gyanús változás:
+
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Természetesen itt is mellétehetjük az európai összehasonlítást (és ez
 hasznos is, mert egyfajta viszonyítási alapként szolgál, láthatóvá
 teszi, hogy ha valamilyen eltérést detektálunk, az csak nálunk van-e
 jelen):
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+Ránagyítva a végére:
+
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 A jobb láthatóság kedvéért itt is megnézhetjük az országokat
 külön-külön:
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+Ránagyítva a végére:
+
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 A helyzet megyei szinten:
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+Ránagyítva a végére:
+
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ## Záró gondolatok
 
@@ -1674,7 +1702,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipois
         legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 Ugyanez akkor, ha a várt halálozásra vetítünk:
 
@@ -1743,7 +1771,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
         legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Kérdés, hogy mi a helyzet a várt értékre vetített mutatóval. A probléma
 a kumulálás, hiszen a százalékok természetesen nem adhatóak egyszerűen
@@ -1785,7 +1813,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
         legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 Ami az említett különbségeket illeti, vegyük példának Szlovákiát és
 Lettországot. Szlovákia szűk háromszor nagyobb ország lélekszámban (5,5
@@ -1997,7 +2025,7 @@ ggplot(melt(res[age=="TOTAL"&geo=="HU"&sens==FALSE&ED=="ExAnte"&model=="quasipoi
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 Ezen felül megengedhető, hogy szakadás legyen benne (ha egy jól
 meghatározott esemény-időpont van, ahol a mortalitás-eltérés kezdődik).
@@ -2054,7 +2082,7 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2026-02-06. A többlethalálozást
+A számítások aktualizálásának dátuma: 2026-02-07. A többlethalálozást
 számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
@@ -2347,7 +2375,7 @@ ggplot(melt(rbind(
   geom_line()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 Miután ilyan módon megvannak az – ellenőrzött – heti lélekszám-adataink,
 azt összekapcsoljuk a halálozási táblával:
@@ -2394,7 +2422,7 @@ ggplot() +
   guides(linewidth = "none")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 Ahol több vastag görbe is van, ott nem volt egyértelmű a választás, ez
 esetben a számítást – érzékenységvizsgálat gyanánt – minden esetre
@@ -2455,28 +2483,13 @@ res <- parallel::parLapply(cl, 1:nrow(pargrid), function(i) {
 parallel::stopCluster(cl)
 
 res <- rbindlist(res)
-
-# res <- readRDS("resFull.rds")
-
-resFull <- res
 ```
 
-Ezután egyesítjük a többlethalálozási adatbázist a korábbi adatokkal, és
-leszűrjük a járvány időszakára:
+Ezután egyesítjük a többlethalálozási adatbázist a korábbi adatokkal:
 
 ``` r
 res <- merge(res, RawData, by = c("geo", "age", "date"))
 res <- res[order(geo, age, date, tkpy, it, sens, ED, model)]
-res <- res[date >= as.Date("2020-03-01")]
-```
-
-Kiszámoljuk a – járvány eleje óta – kumulált többletet és kumulált várt
-értéket, illetve a populációból egy (kumulált) átlagot:
-
-``` r
-res[, cumexcess := cumsum(excess), .(geo, age, tkpy, it, sens, ED, model)]
-res[, meanpopulation := dplyr::cummean(population), .(geo, age, tkpy, it, sens, ED, model)]
-res[, cumexpected := cumsum(expected), .(geo, age, tkpy, it, sens, ED, model)]
 ```
 
 A `geo`-t átalakítjuk faktorrá, és beállítjuk, hogy Magyarország az
@@ -2487,17 +2500,14 @@ res$nuts_level <- nchar(res$geo)-2
 res$geo <- forcats::fct_relevel(as.factor(res$geo), "HU", after = Inf)
 ```
 
-A térkép-adatokkal is összekapcsoljuk az eredményeket a későbbi térképes
-ábrázolás érdekében, illetve kibővítjük azokat az országok és megyék
+A térkép-adatokat is letöltjük az eredmények későbbi térképes ábrázolása
+érdekében, illetve kibővítjük azokat az országok és megyék
 elnevezéseivel, hogy ne csak kódjaink legyenek:
 
 ``` r
 geodata <- eurostat::get_eurostat_geospatial(output_class = "sf", resolution = "01",
                                              year = "2021")
-geodata <- merge(geodata, res[sens==FALSE&ED=="ExPost"&model=="quasipoisson"&
-                                date=="2023-06-26",
-                              .(y = cumexcess/meanpopulation*1e6, geo, age, tkpy, it, sens,
-                                ED, model, nuts_level)], by = "geo")
+
 res <- merge(res,
              data.table(geo = c(unique(RawData[nchar(geo)==2]$geo),
                                 c("HU110", "HU120", "HU211", "HU212", "HU213", "HU221", "HU222",
@@ -2520,7 +2530,17 @@ res$iso_code <- countrycode::countrycode(ifelse(res$nuts_level==3, NA_character_
                                          "eurostat", "iso2c")
 ```
 
-A jelentett halálozással való egybevetés céljából letöltjük a WHO
+Ezen a ponton elmentjük az adatbázist: ez lesz az a verzió, ami a
+koronavírus-járványtól függetlenül, a teljes időszakra vonatkozóan
+használható. Tegyük is ezt meg:
+
+``` r
+resFull <- res
+```
+
+Térjünk most rá a kizárólag a koronavírus időszakára vonatkozó adatok
+előkészítésére. A jelentett halálozással való egybevetés céljából
+letöltjük a WHO
 [adatbázisát](https://data.who.int/dashboards/covid19/data), mely
 tartalmazza a jelentett halálozás adatait, majd kiszámoljuk ott is az
 évet és a hetet:
@@ -2531,6 +2551,17 @@ EpiData$year <- lubridate::isoyear(EpiData$Date_reported)
 EpiData$week <- lubridate::isoweek(EpiData$Date_reported)
 EpiData$New_deaths[is.na(EpiData$New_deaths)] <- 0
 EpiData <- EpiData[,.(new_deaths = sum(New_deaths)) , .(iso_code = Country_code, year, week)]
+```
+
+Kiszámoljuk a – járvány eleje óta – kumulált többletet és kumulált várt
+értéket, illetve a populációból egy (kumulált) átlagot, ehhez leszűrjük
+az adatbázist járvány időszakára:
+
+``` r
+res <- res[date >= as.Date("2020-03-01")]
+res[, cumexcess := cumsum(excess), .(geo, age, tkpy, it, sens, ED, model)]
+res[, meanpopulation := dplyr::cummean(population), .(geo, age, tkpy, it, sens, ED, model)]
+res[, cumexpected := cumsum(expected), .(geo, age, tkpy, it, sens, ED, model)]
 ```
 
 Ezt egyesítjük az előbbi táblával, és a jelentett halálozásokat itt is
@@ -2547,6 +2578,7 @@ eredményeket kimentjük, hogy más is kényelmesen fel tudja használni:
 ``` r
 fwrite(res, "ExcessMortEUR_data.csv", sep = ";", dec = ",", row.names = FALSE)
 fwrite(resFull, "ExcessMortEUR_full_data.csv", sep = ";", dec = ",", row.names = FALSE)
+zip("ExcessMortEUR_full_data.zip", "ExcessMortEUR_full_data.csv")
 saveRDS(res, "res.rds")
 saveRDS(resFull, "resFull.rds")
 saveRDS(RawData, "RawData.rds")
