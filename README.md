@@ -1178,7 +1178,7 @@ adatokat, tehát a fenti ábra jobb szélét, a záráskor, 2023. júliusában
 
 Látható, hogy Magyarország a legkedvezőtlenebb harmad elején-közepén
 van. Hogy egy számszerű érték is szerepeljen: a kumulált
-többlethalálozásunk a járvány alatt ex post számításban 50300 fő volt.
+többlethalálozásunk a járvány alatt ex post számításban 50800 fő volt.
 
 Látványos lehet ugyanezeket az adatokat térképen is ábrázolni. Itt ugyan
 az értékeket nehezebb leolvasni, illetve összehasonlítani, hiszen egy
@@ -1818,10 +1818,10 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
 Ami az említett különbségeket illeti, vegyük példának Szlovákiát és
 Lettországot. Szlovákia szűk háromszor nagyobb ország lélekszámban (5,5
 és 1,9 millió fő) és szűk háromszor annyi az abszolút többlethalálozása
-is (31300 és 13300). Ezért kerültek szinte pontosan egymás fölé: a
+is (31300 és 13600). Ezért kerültek szinte pontosan egymás fölé: a
 lélekszámra vetített többlethalálozásaik nagyon pontosan egyeznek. Igen
 ám, de Lettországban sokkal nagyobb a várt halandóság! A járvány
-időszaka alatt kumuláltan 90600 fő, míg Szlovákiában 178200 fő (ne
+időszaka alatt kumuláltan 90300 fő, míg Szlovákiában 178200 fő (ne
 felejtsük el, hogy Szlovákia majdnem háromszor akkora lélekszámmal bír).
 Ez az alapján sem meglepő, hogy Lettországban egyszerűen nagyobb a nyers
 halandóság, például a koronavírus-járványt megelőző 5 évben 14.6/1000
@@ -2082,7 +2082,7 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2026-02-07. A többlethalálozást
+A számítások aktualizálásának dátuma: 2026-04-22. A többlethalálozást
 számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
