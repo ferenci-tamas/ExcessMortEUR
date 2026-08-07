@@ -422,6 +422,12 @@ azzal, ahogy a mögötte lévő jelenségekről annak idején a sajtó is
 beszámolt (mint a [2007-es
 hőhullámról](https://www.met.hu/ismeret-tar/erdekessegek_tanulmanyok/index.php?id=1969&hir=Hohullamok:_ami_ma_szelsoseges,_az_a_jovoben_valoszinuleg_atlagos_lesz)).
 
+Nagyon érdekes lehet az életkoronkénti lebontás is (a függőleges
+tengelyek skálázása eltérő, illetve az áttekinthetőség kedvéért csak az
+utóbbi 15 évet mutatja az ábra):
+
+![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
 ### A többlethalálozási mutató előnyei és hátrányai
 
 A többlethalálozási mutatónak két hatalmas előnye van tehát: az egyik,
@@ -491,7 +497,7 @@ adatai](https://www.ksh.hu/stadat_files/nep/hu/nep0010.html) alapján
 hogyan alakult a járvány első évében az autóbalesetben és az
 öngyilkosság miatt meghaltak száma Magyarországon:
 
-![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 A mintázat nagyon látványos, mindkét fenti jelenség szemléltetésére.
 Fontos persze hangsúlyozni, hogy ez egy nagyon durva felbontású
@@ -786,12 +792,13 @@ nagyobb a szám, annál kevésbé flexibilis a spline. Az ábrán szerepel a
 teljes intervallum átlagával történő becslés is:
 
 ``` r
-diagpargrid <- CJ(tkpy = c(seq(5, 13, 2), 100), geo = unique(RawData$geo), it = c(TRUE, FALSE),
-                  ED = names(exclude_dates))
-diagpargrid <- diagpargrid[!(it==FALSE&tkpy!=5)]
+diagpargrid <- CJ(tkpy = c(seq(5, 13, 2), 100), it = c(TRUE, FALSE), ED = names(exclude_dates), k = 1)
+diagpargrid <- merge(diagpargrid, unique(RawData[, .(geo, age, k = 1)]), by = "k", allow.cartesian = TRUE)
+diagpargrid$k <- NULL
+diagpargrid <- diagpargrid[!(it == FALSE & tkpy != 5)]
 
 diagdat <- rbindlist(lapply(1:nrow(diagpargrid), function(i) {
-  ce <- compute_expected(RawData[geo==diagpargrid$geo[i]],
+  ce <- compute_expected(RawData[age == diagpargrid$age[i] & geo == diagpargrid$geo[i]],
                          exclude = exclude_dates[[diagpargrid$ED[i]]],
                          include.trend = diagpargrid$it[i], 
                          frequency = 52, # csak a trend-nél van jelentősége, de azt helyrerakjuk
@@ -802,8 +809,8 @@ diagdat <- rbindlist(lapply(1:nrow(diagpargrid), function(i) {
         it = diagpargrid$it[i], tkpy = diagpargrid$tkpy[i])
 }))
 
-diagdat$par <- factor(ifelse(diagdat$it==FALSE, "Átlag",
-                             ifelse(diagdat$tkpy==100, "Lineáris", diagdat$tkpy)),
+diagdat$par <- factor(ifelse(diagdat$it == FALSE, "Átlag",
+                             ifelse(diagdat$tkpy == 100, "Lineáris", diagdat$tkpy)),
                       levels = c("Átlag", "Lineáris", seq(5, 13, 2)))
 
 diagdat$lci <- exp(log(diagdat$trend) - qnorm(0.975)*diagdat$log_trend_se)
@@ -812,16 +819,17 @@ diagdat$uci <- exp(log(diagdat$trend) + qnorm(0.975)*diagdat$log_trend_se)
 diagdat <- merge(diagdat, params[, .(geo, age, tkpy, it, Ref = TRUE)], all.x = TRUE)
 
 ggplot() +
-  geom_line(data = diagdat[geo=="FI"&!par%in%c(11, "Lineáris")&ED=="ExAnte"],
+  geom_line(data = diagdat[geo == "FI" & age == "TOTAL" & par %notin% c(11, "Lineáris") &
+                             ED == "ExAnte"],
             aes(x = date, y = trend/52, group = par, color = par)) +
-  geom_point(data = diagdat[geo=="FI"&year<=2019,
+  geom_point(data = diagdat[geo == "FI" & age == "TOTAL" & year <= 2019,
                             .(outcome = sum(outcome)/sum(population)*1000),
                             .(date = lubridate::make_date(year, 07, 01))],
              aes(x = date, y = outcome)) +
   labs(x = "Év", y = "Heti halálozás [fő/ezer fő/hét]", color = "Paraméter")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Az ábra szépen illusztrálja az összes fenti megállapítást. Az 5-ös
 beállítás túl flexibilis: a végén lévő, egyetlen egy alacsonyabb pont is
@@ -847,7 +855,7 @@ lehet egyértelműen választani. Magyarország is példa erre:
 
 ``` r
 ggplot() +
-  geom_line(data = diagdat[geo=="HU"&!par%in%c(11, "Lineáris")&ED=="ExAnte"],
+  geom_line(data = diagdat[age == "TOTAL" & geo == "HU" & par %notin% c(11, "Lineáris") & ED == "ExAnte"],
             aes(x = date, y = trend/52, group = par, color = par)) +
   geom_point(data = RawData[geo=="HU"&year<=2019,
                             .(outcome = sum(outcome)/sum(population)*1000),
@@ -856,7 +864,7 @@ ggplot() +
   labs(x = "Év", y = "Heti halálozás [fő/ezer fő/hét]", color = "Paraméter")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Látható, hogy a helyzet nehezen megítélhető: elhisszük, hogy amit a
 végén látunk, az egy ténylegesen növekvőbe váltott trend (ez esetben
@@ -887,8 +895,8 @@ szemlélteti a járvány előtti magyar adatokkal (a kék görbe mutatja az
 összes adat simítását, a halvány fekete görbék az egyes évek adatait):
 
 ``` r
-ggplot(RawData[age=="TOTAL"&geo=="HU"&year<=2019], aes(x = week, y = outcome/population*1000*52,
-                                                       group = year)) +
+ggplot(RawData[age == "TOTAL" & geo == "HU" & year <= 2019],
+       aes(x = week, y = outcome/population*1000*52, group = year)) +
   geom_line(alpha = 0.2) +
   geom_line(data = data.frame(week = 1:53,
                               mort = predict(mgcv::gam(outcome ~ s(week, bs = "cc"),
@@ -937,9 +945,9 @@ a módszer ezt simítani fogja. Ezt mutatja a következő ábra a magyar
 adatokon:
 
 ``` r
-ggplot(melt(res[age=="TOTAL"&geo=="HU"&sens==FALSE&ED=="ExAnte"&model=="quasipoisson"&
-                  date<="2023-07-01", .(date, `Nyers` = y*100,
-                                        `Acosta-Irizarry` = increase*100)],
+ggplot(melt(res[age == "TOTAL" & geo == "HU" & sens == FALSE & ED == "ExAnte" &
+                  model == "quasipoisson"& date <= "2023-07-01",
+                .(date, `Nyers` = y * 100, `Acosta-Irizarry` = increase * 100)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
   geom_line() + labs(x = "Dátum", y = "Százalékos többlet") +
   scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
@@ -999,7 +1007,7 @@ távolodunk az adatoktól.) De mi a helyzet az ex post becsléssel? Ezt
 mutatja az ábra új, jobb oldali része:
 
 ``` r
-ggplot(diagdat[geo=="FI"&!par%in%c(11, "Lineáris")&ED!="Flu",
+ggplot(diagdat[age == "TOTAL" & geo == "FI"& par %notin% c(11, "Lineáris") & ED != "Flu",
                .(date, trend, par, ED = ifelse(ED=="ExAnte", "Ex ante", "Ex post"), lci, uci)],
        aes(x = date, y = trend/52, group = par, color = par, fill = par)) +
   facet_wrap(~ED) + guides(fill = "none") +
@@ -1015,7 +1023,7 @@ ggplot(diagdat[geo=="FI"&!par%in%c(11, "Lineáris")&ED!="Flu",
   labs(x = "Év", y = "Heti halálozás [fő/ezer fő/hét]", color = "Paraméter")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Több dolog nagyon tanulságos ezen az új ábrán. Először is, megváltoztak
 a becsült görbék: az új megfigyelés, amit a 2023-as pont mutat, ugyanúgy
@@ -1178,7 +1186,7 @@ adatokat, tehát a fenti ábra jobb szélét, a záráskor, 2023. júliusában
 
 Látható, hogy Magyarország a legkedvezőtlenebb harmad elején-közepén
 van. Hogy egy számszerű érték is szerepeljen: a kumulált
-többlethalálozásunk a járvány alatt ex post számításban 52100 fő volt.
+többlethalálozásunk a járvány alatt ex post számításban 52800 fő volt.
 
 Látványos lehet ugyanezeket az adatokat térképen is ábrázolni. Itt ugyan
 az értékeket nehezebb leolvasni, illetve összehasonlítani, hiszen egy
@@ -1288,7 +1296,7 @@ alábbi ábra mutatja az ex ante aktuális halálozást ezen paraméterek
 függvényében:
 
 ``` r
-ggplot(res[geo=="HU"&age=="TOTAL"&ED=="ExAnte"&date<="2023-07-01",
+ggplot(res[geo == "HU" & age == "TOTAL" & ED == "ExAnte" & date <= "2023-07-01",
            .(date, excess, population, tkpy = ifelse(tkpy==100, "Lineáris", "Spline (9)"),
              model = ifelse(model=="correlated", "Korrelált", "Kvázi-Poisson"))],
        aes(x = date, y = excess/population*1e6, color = paste0(tkpy, ", ", model, " modell"))) +
@@ -1299,7 +1307,7 @@ ggplot(res[geo=="HU"&age=="TOTAL"&ED=="ExAnte"&date<="2023-07-01",
         legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Az ábrából két fontos következtetést is levonhatunk. Egyrészt a használt
 modell típusának gyakorlatilag semmilyen jelentősége nincsen. Másrészt,
@@ -1315,7 +1323,7 @@ a másik nézőpontot, ex post elemzést a kumulált számokkal. Mivel az
 egy új típusú ábrát használni:
 
 ``` r
-ggplot(res[nuts_level==0&age=="TOTAL"&ED=="ExPost"&date=="2023-06-26",
+ggplot(res[nuts_level == 0 & age == "TOTAL" & ED == "ExPost" & date == "2023-06-26",
            .(geo, sens = ifelse(sens, "Érzékenység-vizsgáló", "Elsődleges"),
              model = ifelse(model=="correlated", "Korrelált", "Kvázi-Poisson"),
              y = cumexcess/meanpopulation*1e6)],
@@ -1327,7 +1335,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&ED=="ExPost"&date=="2023-06-26",
   theme(plot.caption = element_text(face = "bold", hjust = 0))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Ez az ábra nagyon fontos, mert mutatja, hogy bár a konkrét számok nem
 egyértelműek, az országok közötti sorrend nagyban állandó, függetlenül a
@@ -1358,8 +1366,8 @@ Megnézhetjük Magyarország példáján a kétféle adatsort (az ex ante
 számolt aktuális halálozást használva):
 
 ``` r
-ggplot(melt(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipoisson"&
-                  date<="2023-07-01",
+ggplot(melt(res[geo == "HU" & age == "TOTAL" & sens == FALSE & ED == "ExAnte" &
+                  model == "quasipoisson" & date <= "2023-07-01",
                 .(date, `Többlethalálozás` = excess/population*1e6,
                   `Regisztrált koronavírus-halálozás` = new_deaths/population*1e6)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
@@ -1411,8 +1419,8 @@ vonal az egyenlőség vonala, ahol a többlethalálozás egyezne a jelentett
 halálozással):
 
 ``` r
-ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"&
-             date=="2023-06-26"],
+ggplot(res[nuts_level == 0 & age == "TOTAL" & sens == FALSE & ED == "ExPost" &
+             model == "quasipoisson" & date == "2023-06-26"],
        aes(x = cumexcess/population*1e6, y = cumnewdeaths/population*1e6, label = geo)) +
   geom_point(aes(col = geo=="HU")) + geom_abline() + geom_text(hjust = "left", nudge_x = 30) +
   scale_color_manual(values=c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
@@ -1438,8 +1446,8 @@ időbeli alakulását is (most kivételesen, mivel egyetlen országról van
 szó, abszolút skálán):
 
 ``` r
-p <- ggplot(melt(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"&
-                       date<="2023-07-01", 
+p <- ggplot(melt(res[geo == "HU" & age == "TOTAL" & sens == FALSE & ED == "ExPost" &
+                       model == "quasipoisson" & date <= "2023-07-01",
                      .(date, `Többlethalálozás` = cumexcess,
                        `Regisztrált koronavírus-halálozás` = cumnewdeaths)],
                  id.vars = "date"), aes(x = date, y = value, group = variable, color = variable,
@@ -1516,47 +1524,46 @@ becslésünk.
 
 Nézzük először a Magyarországra vonatkozó eredményeket:
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Természetesen, ez esetben nem csak a járvány után folytatódik tovább a
 görbe, hanem előtte is ugyanúgy megrajzolható! A hosszabb intervallum
 miatt talán jobban látható, ha itt is szétszedjük évente:
-
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Ha monitorizálásra használjuk ezt, akkor logikus a végére ránagyítani,
 hiszen itt, a legvégén keletkező új adatoknál nézzük, hogy van-e
 valamilyen gyanús változás:
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Természetesen itt is mellétehetjük az európai összehasonlítást (és ez
 hasznos is, mert egyfajta viszonyítási alapként szolgál, láthatóvá
 teszi, hogy ha valamilyen eltérést detektálunk, az csak nálunk van-e
 jelen):
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Ránagyítva a végére:
 
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 A jobb láthatóság kedvéért itt is megnézhetjük az országokat
 külön-külön:
 
-![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
-
-Ránagyítva a végére:
-
 ![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
-A helyzet megyei szinten:
+Ránagyítva a végére:
 
 ![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
-Ránagyítva a végére:
+A helyzet megyei szinten:
 
 ![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+Ránagyítva a végére:
+
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ## Záró gondolatok
 
@@ -1688,8 +1695,8 @@ Emlékeztetőül, az aktuális többlethalálozás lélekszámra vetített relat
 mutatóként, ex ante módon számolva:
 
 ``` r
-ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipoisson"&
-             date<="2023-07-01"],
+ggplot(res[nuts_level == 0 & age == "TOTAL" & sens == FALSE & ED == "ExAnte" &
+             model == "quasipoisson" & date <= "2023-07-01"],
        aes(x = date, y = excess/population*1e6, group = geo, label = geo)) +
   geom_line(aes(color = geo=="HU",
                 group = forcats::fct_reorder(geo, geo=="HU", .fun = first))) +
@@ -1702,13 +1709,14 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipois
         legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 Ugyanez akkor, ha a várt halálozásra vetítünk:
 
 ``` r
-ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExAnte"&model=="quasipoisson"&
-             date<="2023-07-01"], aes(x = date, y = increase*100, group = geo, label = geo)) +
+ggplot(res[nuts_level == 0 & age == "TOTAL" & sens == FALSE & ED == "ExAnte" &
+             model == "quasipoisson" & date <= "2023-07-01"],
+       aes(x = date, y = increase*100, group = geo, label = geo)) +
   geom_line(aes(color = geo=="HU",
                 group = forcats::fct_reorder(geo, geo=="HU", .fun = first))) +
   scale_color_manual(values=c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
@@ -1727,7 +1735,7 @@ Kicsit direktebben is összevethetjük őket, ha országonként külön-külön
 ábrázoljuk, egymással szemben:
 
 ``` r
-ggplot(res[age=="TOTAL"&nuts_level==0], aes(x = increase*100, y = excess/population*1e6)) +
+ggplot(res[age == "TOTAL" & nuts_level == 0], aes(x = increase*100, y = excess/population*1e6)) +
   geom_line() +
   labs(x = "Aktuális többlethalálozás [%]", y = "Aktuális többlethalálozás [fő/1M fő]",
        caption = captionlab) +
@@ -1757,8 +1765,8 @@ Folytassuk most az összesített többlethalálozással, ex post módon
 számolva. Emlékeztetőül a népességszámra vetített ábra:
 
 ``` r
-ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"&
-             date<="2023-07-01"],
+ggplot(res[nuts_level == 0 & age == "TOTAL" & sens == FALSE & ED == "ExPost" &
+             model == "quasipoisson" & date <= "2023-07-01"],
        aes(x = date, y = cumexcess/meanpopulation*1e6, group = geo, label = geo)) +
   geom_line(aes(color = geo=="HU",
                 group = forcats::fct_reorder(geo, geo=="HU", .fun = first))) +
@@ -1771,7 +1779,7 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
         legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 Kérdés, hogy mi a helyzet a várt értékre vetített mutatóval. A probléma
 a kumulálás, hiszen a százalékok természetesen nem adhatóak egyszerűen
@@ -1779,11 +1787,11 @@ a kumulálás, hiszen a százalékok természetesen nem adhatóak egyszerűen
 többletet és a várt értéket, majd ezeket osztjuk el egymással:
 
 ``` r
-ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"&
-             date<="2023-07-01"],
+ggplot(res[nuts_level == 0 & age == "TOTAL" & sens == FALSE & ED == "ExPost" &
+             model == "quasipoisson" & date <= "2023-07-01"],
        aes(x = date, y = cumexcess/cumexpected*100, group = geo, label = geo)) +
   geom_line(aes(color = geo=="HU",
-                group = forcats::fct_reorder(geo, geo=="HU", .fun = first))) +
+                group = forcats::fct_reorder(geo, geo == "HU", .fun = first))) +
   geom_hline(yintercept = 0, colour = "blue") +
   scale_color_manual(values = c("FALSE" = "gray", "TRUE" = "red")) + guides(color = "none") +
   labs(x = "", y = "Összesített többlethalálozás [%]", caption = captionlab) +
@@ -1801,8 +1809,8 @@ jobban lássunk, vessük össze közvetlenebbül a kétféle értéket az egyes
 országokra:
 
 ``` r
-ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipoisson"&
-             date=="2023-06-26"],
+ggplot(res[nuts_level == 0 & age == "TOTAL" & sens == FALSE & ED == "ExPost" &
+             model == "quasipoisson" & date == "2023-06-26"],
        aes(x = cumexcess/meanpopulation*1e6, y = cumexcess/cumexpected*100, label = geo)) +
   geom_point(aes(col = geo=="HU")) + geom_hline(yintercept = 0, colour = "blue") +
   geom_vline(xintercept = 0, colour = "blue") + geom_text(hjust = "left", nudge_x = 30) +
@@ -1813,15 +1821,15 @@ ggplot(res[nuts_level==0&age=="TOTAL"&sens==FALSE&ED=="ExPost"&model=="quasipois
         legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 Ami az említett különbségeket illeti, vegyük példának Szlovákiát és
 Lettországot. Szlovákia szűk háromszor nagyobb ország lélekszámban (5,5
 és 1,9 millió fő) és szűk háromszor annyi az abszolút többlethalálozása
-is (31100 és 13500). Ezért kerültek szinte pontosan egymás fölé: a
+is (31100 és 13700). Ezért kerültek szinte pontosan egymás fölé: a
 lélekszámra vetített többlethalálozásaik nagyon pontosan egyeznek. Igen
 ám, de Lettországban sokkal nagyobb a várt halandóság! A járvány
-időszaka alatt kumuláltan 90400 fő, míg Szlovákiában 178500 fő (ne
+időszaka alatt kumuláltan 90200 fő, míg Szlovákiában 178500 fő (ne
 felejtsük el, hogy Szlovákia majdnem háromszor akkora lélekszámmal bír).
 Ez az alapján sem meglepő, hogy Lettországban egyszerűen nagyobb a nyers
 halandóság, például a koronavírus-járványt megelőző 5 évben 14.6/1000
@@ -1940,8 +1948,8 @@ a hatása, érdemes megnézni, hogy mi a várt halálozás becsült görbéje a
 két módon:
 
 ``` r
-ggplot(resFull[geo=="HU"&age=="TOTAL"&sens==FALSE&ED%in%c("ExPost", "Flu")&
-                 model=="quasipoisson",
+ggplot(resFull[geo == "HU" & age == "TOTAL" & sens == FALSE & ED %in% c("ExPost", "Flu")&
+                 model == "quasipoisson",
                .(date, expected,
                  ED = ifelse(ED=="ExPost", "Eredeti", "Influenza-szezonok kizárásával"))],
        aes(x = date, y = expected, color = ED)) + geom_line() +
@@ -1963,8 +1971,8 @@ az, hogy a viszonyítási alapérték tartalmazza az – abban az évben be sem
 következett – influenza-szezont. Nézzük az eredményeket:
 
 ``` r
-ggplot(res[geo=="HU"&age=="TOTAL"&sens==FALSE&ED%in%c("ExPost", "Flu")&model=="quasipoisson"&
-             date<="2023-07-01",
+ggplot(res[geo == "HU" & age == "TOTAL" & sens == FALSE & ED %in% c("ExPost", "Flu") &
+             model == "quasipoisson" & date <= "2023-07-01",
            .(date, cumexcess, ED = ifelse(ED=="ExPost", "Eredeti",
                                           "Influenza-szezonok kizárásával"))],
        aes(x = date, y = cumexcess, group = ED, color = ED, label = round(cumexcess, -2))) +
@@ -2016,16 +2024,16 @@ következő ábra, mely a nyersen számolt, és az $f\left(t\right)$-ből
 abszolútra visszaszámolt többletet mutatja:
 
 ``` r
-ggplot(melt(res[age=="TOTAL"&geo=="HU"&sens==FALSE&ED=="ExAnte"&model=="quasipoisson"&
-                  date<="2023-07-01", .(date, `Nyers` = y*100,
-                                        `Acosta-Irizarry` = increase*100)],
+ggplot(melt(res[age == "TOTAL" & geo == "HU" & sens == FALSE & ED == "ExAnte" &
+                  model == "quasipoisson"& date <= "2023-07-01",
+                .(date, `Nyers` = y * 100, `Acosta-Irizarry` = increase * 100)],
             id.vars = "date"), aes(x = date, y = value, group = variable, color = variable)) +
   geom_line() + labs(x = "Dátum", y = "Százalékos többlet") +
   scale_x_date(date_breaks = datebreak, labels = scales::label_date_short()) +
   theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 Ezen felül megengedhető, hogy szakadás legyen benne (ha egy jól
 meghatározott esemény-időpont van, ahol a mortalitás-eltérés kezdődik).
@@ -2082,7 +2090,7 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2026-07-14. A többlethalálozást
+A számítások aktualizálásának dátuma: 2026-08-07. A többlethalálozást
 számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
@@ -2107,27 +2115,60 @@ használva a regionális adatokhoz), az `eurostat` csomag használatával,
 majd leszűrjük az adattáblákat és kikódoljuk a szükséges változókat:
 
 ``` r
-RawData <- as.data.table(eurostat::get_eurostat("demo_r_mwk_ts", use.data.table = TRUE))
-RawData <- RawData[sex=="T"]
-RawData <- RawData[geo%in%eurostat::eu_countries$code|geo%in%eurostat::efta_countries$code]
-RawData <- RawData[geo!="UK"]
+RawData <- as.data.table(eurostat::get_eurostat("demo_r_mwk_05", use.data.table = TRUE))
+RawData <- RawData[sex == "T"]
+RawData <- RawData[(geo %in% eurostat::eu_countries$code) | (geo %in% eurostat::efta_countries$code)]
+# RawData <- RawData[geo != "UK"]
+RawData <- RawData[geo == "HU" | age == "TOTAL"]
+RawData <- RawData[age != "UNK"]
+RawData[age %in% c("Y_LT5", "Y5-9", "Y10-14", "Y15-19", "Y20-24",
+                   "Y25-29", "Y30-34")]$age <- "Y_LT35"
+RawData[age %in% c("Y85-89", "Y_GE90")]$age <- "Y_GE85"
+RawData <- RawData[, .(values = sum(values)), .(freq, age, sex, unit, geo, TIME_PERIOD)]
+
+KSHData <- fread("https://www.ksh.hu/stadat_files/nep/hu/nep0065.csv", skip = 1, encoding = "Latin-1", check.names = TRUE)
+KSHData$TIME_PERIOD <- as.Date(KSHData$A.hét.kezdõ.napja, format = "%Y. %B %d.")
+KSHData$Összesen <- as.integer(gsub(" ", "", KSHData$Összesen))
+KSHData <- melt(KSHData[
+  , .(X0.34.éves.összesen, X35.39.éves.összesen, X40.44.éves.összesen,
+      X45.49.éves.összesen, X50.54.éves.összesen, X55.59.éves.összesen,
+      X60.64.éves.összesen, X65.69.éves.összesen, X70.74.éves.összesen,
+      X75.79.éves.összesen, X80.84.éves.összesen, X85.89.éves.összesen,
+      X90..éves.összesen, Összesen, TIME_PERIOD)], id.vars = "TIME_PERIOD",
+  variable.factor = FALSE, variable.name = "agehun", value.name = "values")
+KSHData <- merge(KSHData, data.table(
+  agehun = c("X0.34.éves.összesen", "X35.39.éves.összesen",
+             "X40.44.éves.összesen", "X45.49.éves.összesen",
+             "X50.54.éves.összesen", "X55.59.éves.összesen",
+             "X60.64.éves.összesen", "X65.69.éves.összesen",
+             "X70.74.éves.összesen", "X75.79.éves.összesen",
+             "X80.84.éves.összesen", "X85.89.éves.összesen",
+             "X90..éves.összesen", "Összesen"),
+  age = c("Y_LT35", "Y35-39", "Y40-44", "Y45-49", "Y50-54", "Y55-59",
+          "Y60-64", "Y65-69", "Y70-74", "Y75-79", "Y80-84", "Y85-89",
+          "Y_GE90", "TOTAL")
+))
+KSHData[age %in% c("Y85-89", "Y_GE90")]$age <- "Y_GE85"
+KSHData <- KSHData[, .(values = sum(values)), .(age, TIME_PERIOD)]
+
+RawData <- rbind(RawData,
+                 KSHData[TIME_PERIOD > max(RawData[geo == "HU"]$TIME_PERIOD),
+                         .(freq = "W", age, sex = "T", unit = "NR", geo = "HU", TIME_PERIOD,
+                           values)])
+
 RawDataHunNUTS <- as.data.table(eurostat::get_eurostat("demo_r_mwk3_ts", use.data.table = TRUE))
-RawDataHunNUTS <- RawDataHunNUTS[sex=="T"&substring(geo, 1, 2)=="HU"&nchar(geo)==5]
-RawDataHunNUTS[ , values := round(values*sum(values)/sum(values[geo!="HUXXX"])), .(TIME_PERIOD)]
-RawDataHunNUTS <- RawDataHunNUTS[geo!="HUXXX"]
-RawData <- rbind(RawData, RawDataHunNUTS)
-# RawDataHunAge <- as.data.table(eurostat::get_eurostat("demo_r_mwk_05", time_format = "raw"))
-# RawDataHunAge <- RawDataHunAge[sex=="T"&geo=="HU"&age!="TOTAL"]
-# RawDataHunAge$age <- ifelse(RawDataHunAge$age=="Y_GE90", "Y85-89", RawDataHunAge$age)
-# RawDataHunAge <- RawDataHunAge[, .(values = sum(values)) , .(age, sex, unit, geo, time)]
-# RawDataHunAge[age=="Y85-89"]$age <- "Y_GE85"
+RawDataHunNUTS <- RawDataHunNUTS[sex == "T" & substring(geo, 1, 2) == "HU" & nchar(geo) == 5]
+RawDataHunNUTS[ , values := round(values*sum(values)/sum(values[geo != "HUXXX"])), .(TIME_PERIOD)]
+RawDataHunNUTS <- RawDataHunNUTS[geo != "HUXXX"]
+
+RawData <- rbind(RawData, RawDataHunNUTS[, .(freq, age = "TOTAL", sex, unit, geo, TIME_PERIOD, values)])
+
 # RawDataHunAge[ , values := round(values*sum(values)/sum(values[age!="UNK"])), .(time)]
-# RawDataHunAge <- RawDataHunAge[age!="UNK"]
-# RawData <- rbind(RawData, RawDataHunAge)
 # RawData <- RawData[!is.na(RawData$values)]
+
 RawData$year <- lubridate::isoyear(RawData$TIME_PERIOD)
 RawData$week <- lubridate::isoweek(RawData$TIME_PERIOD)
-RawData <- RawData[, .(geo, age = "TOTAL", year, week, date = TIME_PERIOD, outcome = values)]
+RawData <- RawData[, .(geo, age, year, week, date = TIME_PERIOD, outcome = values)]
 ```
 
 Az egyes országokra rendelkezésre álló adatok hossza, mérve azzal, hogy
@@ -2137,59 +2178,59 @@ hány hétnyi adatunk van 2020 előttről:
 knitr::kable(RawData[year<2020, .N, .(geo)][order(N)])
 ```
 
-| geo   |    N |
-|:------|-----:|
-| CY    |  261 |
-| EL    |  261 |
-| RO    |  261 |
-| IE    |  313 |
-| FR    |  365 |
-| IT    |  469 |
-| MT    |  469 |
-| DK    |  678 |
-| CZ    |  782 |
-| AT    | 1043 |
-| BE    | 1043 |
-| BG    | 1043 |
-| CH    | 1043 |
-| DE    | 1043 |
-| EE    | 1043 |
-| ES    | 1043 |
-| FI    | 1043 |
-| HR    | 1043 |
-| HU    | 1043 |
-| HU110 | 1043 |
-| HU120 | 1043 |
-| HU211 | 1043 |
-| HU212 | 1043 |
-| HU213 | 1043 |
-| HU221 | 1043 |
-| HU222 | 1043 |
-| HU223 | 1043 |
-| HU231 | 1043 |
-| HU232 | 1043 |
-| HU233 | 1043 |
-| HU311 | 1043 |
-| HU312 | 1043 |
-| HU313 | 1043 |
-| HU321 | 1043 |
-| HU322 | 1043 |
-| HU323 | 1043 |
-| HU331 | 1043 |
-| HU332 | 1043 |
-| HU333 | 1043 |
-| IS    | 1043 |
-| LI    | 1043 |
-| LT    | 1043 |
-| LU    | 1043 |
-| LV    | 1043 |
-| NL    | 1043 |
-| NO    | 1043 |
-| PL    | 1043 |
-| PT    | 1043 |
-| SE    | 1043 |
-| SI    | 1043 |
-| SK    | 1043 |
+| geo   |     N |
+|:------|------:|
+| CY    |   261 |
+| EL    |   261 |
+| RO    |   261 |
+| IE    |   313 |
+| FR    |   365 |
+| IT    |   469 |
+| MT    |   469 |
+| DK    |   678 |
+| CZ    |   782 |
+| AT    |  1043 |
+| BE    |  1043 |
+| BG    |  1043 |
+| CH    |  1043 |
+| DE    |  1043 |
+| EE    |  1043 |
+| ES    |  1043 |
+| FI    |  1043 |
+| HR    |  1043 |
+| HU110 |  1043 |
+| HU120 |  1043 |
+| HU211 |  1043 |
+| HU212 |  1043 |
+| HU213 |  1043 |
+| HU221 |  1043 |
+| HU222 |  1043 |
+| HU223 |  1043 |
+| HU231 |  1043 |
+| HU232 |  1043 |
+| HU233 |  1043 |
+| HU311 |  1043 |
+| HU312 |  1043 |
+| HU313 |  1043 |
+| HU321 |  1043 |
+| HU322 |  1043 |
+| HU323 |  1043 |
+| HU331 |  1043 |
+| HU332 |  1043 |
+| HU333 |  1043 |
+| IS    |  1043 |
+| LI    |  1043 |
+| LT    |  1043 |
+| LU    |  1043 |
+| LV    |  1043 |
+| NL    |  1043 |
+| NO    |  1043 |
+| PL    |  1043 |
+| PT    |  1043 |
+| SE    |  1043 |
+| SI    |  1043 |
+| SK    |  1043 |
+| HU    | 13559 |
 
 Látszik, hogy valamennyi ország esetében van legalább 250 hétnyi, azaz
 kb. 5 évnyi adat van a járvány előttről, ami lehetővé teszi az
@@ -2295,13 +2336,18 @@ A háttérpopuláció létszám adatait szintén az Eurostat-tól kérjük le
 
 ``` r
 PopData <- as.data.table(eurostat::get_eurostat("demo_pjangroup", use.data.table = TRUE))
-PopData <- PopData[!age%in%c("UNK", "Y_GE75", "Y_GE80")]
+PopData <- PopData[age %notin% c("UNK", "Y_GE75", "Y_GE80")]
+PopData[age %in% c("Y_LT5", "Y5-9", "Y10-14", "Y15-19", "Y20-24",
+                   "Y25-29", "Y30-34")]$age <- "Y_LT35"
+PopData <- PopData[, .(values = sum(values)), .(freq, age, sex, unit, geo, TIME_PERIOD)]
+
 PopDataHunNUTS <- as.data.table(eurostat::get_eurostat("demo_r_pjanaggr3",
                                                        use.data.table = TRUE))
-PopDataHunNUTS <- PopDataHunNUTS[substring(geo, 1, 2)=="HU"&nchar(geo)==5&geo!="HUXXX"]
-PopDataHunNUTS <- PopDataHunNUTS[age=="TOTAL"]
+PopDataHunNUTS <- PopDataHunNUTS[substring(geo, 1, 2) == "HU" & nchar(geo) == 5 & geo != "HUXXX"]
+PopDataHunNUTS <- PopDataHunNUTS[age == "TOTAL"]
+
 PopData <- rbind(PopData, PopDataHunNUTS)
-PopData <- PopData[sex=="T"]
+PopData <- PopData[sex == "T"]
 # PopDataHunAge <- as.data.table(eurostat::get_eurostat("demo_pjan"))
 # PopDataHunAge <- PopDataHunAge[sex=="T"&geo=="HU"&!age%in%c("TOTAL", "UNK")]
 # PopDataHunAge$age <- ifelse(PopDataHunAge$age=="Y_LT1", 0,
@@ -2315,7 +2361,7 @@ PopData <- PopData[sex=="T"]
 #                                                                  seq(10, 90, 5)-1), "Y_GE90"),
 #                                       right = FALSE))
 # PopData <- rbind(PopData, PopDataHunAge)
-PopData$numdate <- as.numeric(PopData$TIME_PERIOD-as.Date("1960-01-01"))
+PopData$numdate <- as.numeric(PopData$TIME_PERIOD - as.Date("1960-01-01"))
 # PopData$geo <- as.factor(PopData$geo)
 ```
 
@@ -2358,10 +2404,10 @@ jóságát és az extrapolációét is; például Magyarország esetében:
 
 ``` r
 ggplot(melt(rbind(
-  PopData[geo%in%unique(RawData$geo),
+  PopData[geo %in% unique(RawData$geo),
           .(geo, age, date = TIME_PERIOD,
             population = values, Type = "Actual")],
-  PopData[geo%in%unique(RawData$geo),
+  PopData[geo %in% unique(RawData$geo),
           .(date = unique(RawData$date),
             population = as.numeric(predict(
               mgcv::gam(values ~ s(numdate)),
@@ -2375,14 +2421,14 @@ ggplot(melt(rbind(
   geom_line()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 Miután ilyan módon megvannak az – ellenőrzött – heti lélekszám-adataink,
 azt összekapcsoljuk a halálozási táblával:
 
 ``` r
 RawData <- merge(RawData,
-                 PopData[geo%in%unique(RawData$geo),
+                 PopData[geo %in% unique(RawData$geo),
                          .(date = unique(RawData$date),
                            population = as.numeric(predict(
                              mgcv::gam(values ~ s(numdate)),
@@ -2397,8 +2443,8 @@ előrevetítéséhez használunk:
 
 ``` r
 params <- fread("params.csv")
-params$sens <- duplicated(params$geo)
-params[it==FALSE]$tkpy <- 5
+params$sens <- duplicated(params[, .(geo, age)])
+params[it == FALSE]$tkpy <- 5
 ```
 
 Ahogy már volt róla szó, ezeket egyszerűen “ránézésre”, azaz a
@@ -2411,18 +2457,19 @@ elfogadott, és becsléshez felhasznált verzió, ennek jogossága tehát ezen
 
 ``` r
 ggplot() +
-  geom_line(data = diagdat[ED=="ExAnte"&!tkpy%in%c(11, 13)],
+  geom_line(data = diagdat[ED == "ExAnte" & tkpy %notin% c(11, 13)],
             aes(x = date, y = trend/52, group = par, color = par, linewidth = !is.na(Ref))) +
   scale_linewidth_manual(values = c(1, 2)) +
-  geom_point(data = RawData[year<=2019,
+  geom_point(data = RawData[year <= 2019,
                             .(outcome = sum(outcome)/sum(population)*1000),
-                            .(geo, date = lubridate::make_date(year, 07, 01))],
-             aes(x = date, y = outcome)) + facet_wrap(~geo, scales = "free", ncol = 4) +
+                            .(geo, age, date = lubridate::make_date(year, 07, 01))],
+             aes(x = date, y = outcome)) +
+  facet_wrap(~ paste0(geo, ifelse(age == "TOTAL", "", paste0(" (", age, ")"))), scales = "free", ncol = 4) +
   labs(x = "Év", y = "Heti halálozás [fő/ezer fő/hét]", color = "Paraméter") +
   guides(linewidth = "none")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
 Ahol több vastag görbe is van, ott nem volt egyértelmű a választás, ez
 esetben a számítást – érzékenységvizsgálat gyanánt – minden esetre
@@ -2451,13 +2498,13 @@ exclude_dates <- list(ExAnte = seq(as.Date("2020-03-01"), max(RawData$date), by 
 pargrid <- as.data.table(merge(as.data.frame(params),
                                CJ(ED = names(exclude_dates),
                                   model = c("quasipoisson", "poisson", "correlated"))))
-pargrid <- pargrid[substring(geo, 1, 2)=="HU"|ED!="Flu"]
+pargrid <- pargrid[substring(geo, 1, 2) == "HU" | ED != "Flu"]
 
-cl <- parallel::makeCluster(parallel::detectCores()-1)
+cl <- parallel::makeCluster(parallel::detectCores() - 1)
 parallel::clusterExport(cl, c("RawData", "pargrid", "exclude_dates"), envir = environment())
 
-res <- parallel::parLapply(cl, 1:nrow(pargrid), function(i) {
-  geodat <- RawData[RawData$geo==pargrid$geo[i]&RawData$age==pargrid$age[i],]
+res <- parallel::parLapplyLB(cl, 1:nrow(pargrid), function(i) {
+  geodat <- RawData[RawData$geo == pargrid$geo[i] & RawData$age == pargrid$age[i],]
   with(excessmort::excess_model(geodat, start = min(geodat$date), end = max(geodat$date),
                                 model = pargrid$model[i],
                                 exclude = exclude_dates[[pargrid$ED[i]]],
@@ -2489,6 +2536,14 @@ Ezután egyesítjük a többlethalálozási adatbázist a korábbi adatokkal:
 
 ``` r
 res <- merge(res, RawData, by = c("geo", "age", "date"))
+res <- merge(res, data.table(
+  age = c("TOTAL", "Y_LT35", "Y35-39", "Y40-44", "Y45-49", "Y50-54", "Y55-59",
+          "Y60-64", "Y65-69", "Y70-74", "Y75-79", "Y80-84", "Y_GE85"),
+  agelabel = c("Összesen", "<35", "35-39", "40-44", "45-49", "50-54", "55-59",
+               "60-64", "65-69", "70-74", "75-79", "80-84", "> 84")),
+  by = "age")
+res$agelabel <- factor(res$agelabel, levels = c("Összesen", "<35", "35-39", "40-44", "45-49", "50-54", "55-59",
+                                                "60-64", "65-69", "70-74", "75-79", "80-84", "> 84"))
 res <- res[order(geo, age, date, tkpy, it, sens, ED, model)]
 ```
 
@@ -2496,7 +2551,7 @@ A `geo`-t átalakítjuk faktorrá, és beállítjuk, hogy Magyarország az
 utolsó legyen, hogy az ábrázolásnál az kerüljön a legtetejére:
 
 ``` r
-res$nuts_level <- nchar(res$geo)-2
+res$nuts_level <- nchar(res$geo) - 2
 res$geo <- forcats::fct_relevel(as.factor(res$geo), "HU", after = Inf)
 ```
 
@@ -2509,11 +2564,11 @@ geodata <- eurostat::get_eurostat_geospatial(output_class = "sf", resolution = "
                                              year = "2021")
 
 res <- merge(res,
-             data.table(geo = c(unique(RawData[nchar(geo)==2]$geo),
+             data.table(geo = c(unique(RawData[nchar(geo) == 2]$geo),
                                 c("HU110", "HU120", "HU211", "HU212", "HU213", "HU221", "HU222",
                                   "HU223", "HU231", "HU232", "HU233", "HU311", "HU312", "HU313",
                                   "HU321", "HU322", "HU323", "HU331", "HU332", "HU333")),
-                        geoname = c(countrycode::countrycode(unique(RawData[nchar(geo)==2]$geo),
+                        geoname = c(countrycode::countrycode(unique(RawData[nchar(geo) == 2]$geo),
                                                              "eurostat", "country.name"),
                                     c("Budapest", "Pest", "Fejér", "KE", "Veszprém", "GyMS",
                                       "Vas", "Zala", "Baranya", "Somogy", "Tolna", "BAZ",
@@ -2526,7 +2581,7 @@ Eurostat kódból, hogy később az jelentett halálozási (WHO) adatbázissal
 lehessen egyesíteni:
 
 ``` r
-res$iso_code <- countrycode::countrycode(ifelse(res$nuts_level==3, NA_character_, res$geo),
+res$iso_code <- countrycode::countrycode(ifelse(res$nuts_level == 3, NA_character_, res$geo),
                                          "eurostat", "iso2c")
 ```
 
