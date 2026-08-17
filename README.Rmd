@@ -160,7 +160,7 @@ pargrid <- pargrid[substring(geo, 1, 2) == "HU" | ED != "Flu"]
 cl <- parallel::makeCluster(parallel::detectCores() - 1)
 parallel::clusterExport(cl, c("RawData", "pargrid", "exclude_dates"), envir = environment())
 
-res <- parallel::parLapplyLB(cl, 1:nrow(pargrid), function(i) {
+res <- parallel::parLapplyLB(cl, 1:nrow(pargrid), chunk.size = 1, function(i) {
   geodat <- RawData[RawData$geo == pargrid$geo[i] & RawData$age == pargrid$age[i],]
   with(excessmort::excess_model(geodat, start = min(geodat$date), end = max(geodat$date),
                                 model = pargrid$model[i],
@@ -1231,7 +1231,7 @@ Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb el�
 ```{r konyvtar, eval = FALSE}
 ```
 
-A mortalitási adatokat az Eurostat-tól kérjük le (a `demo_r_mwk_ts` [adatbázist](https://ec.europa.eu/eurostat/databrowser/view/demo_r_mwk_ts/default/table?lang=en) használva az országos, és a `demo_r_mwk3_ts` [adatbázist](https://ec.europa.eu/eurostat/databrowser/view/demo_r_mwk3_ts/default/table) használva a regionális adatokhoz), az `eurostat` csomag használatával, majd leszűrjük az adattáblákat és kikódoljuk a szükséges változókat:
+A mortalitási adatokat az Eurostat-tól kérjük le (a `demo_r_mwk_ts` [adatbázist](https://ec.europa.eu/eurostat/databrowser/view/demo_r_mwk_ts/default/table?lang=en) használva az országos, és a `demo_r_mwk3_ts` [adatbázist](https://ec.europa.eu/eurostat/databrowser/view/demo_r_mwk3_ts/default/table) használva a regionális adatokhoz), az `eurostat` csomag használatával, ezt kiegészítjük a KSH adataival (STADAT [22.2.1.2-es tábla](https://www.ksh.hu/stadat_files/nep/hu/nep0065.html)), mivel az jellemzően hamarabb frissül mint az Eurostat, végül leszűrjük az adattáblákat és kikódoljuk a szükséges változókat:
 
 ```{r adatbetoltes, eval = FALSE, message = FALSE}
 ```

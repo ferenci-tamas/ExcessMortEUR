@@ -50,3 +50,5 @@ rsconnect/
 
 ExcessMortEUR_full_data.csv
 .positai
+
+/.luarc.json

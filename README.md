@@ -1186,7 +1186,7 @@ adatokat, tehát a fenti ábra jobb szélét, a záráskor, 2023. júliusában
 
 Látható, hogy Magyarország a legkedvezőtlenebb harmad elején-közepén
 van. Hogy egy számszerű érték is szerepeljen: a kumulált
-többlethalálozásunk a járvány alatt ex post számításban 52800 fő volt.
+többlethalálozásunk a járvány alatt ex post számításban 52700 fő volt.
 
 Látványos lehet ugyanezeket az adatokat térképen is ábrázolni. Itt ugyan
 az értékeket nehezebb leolvasni, illetve összehasonlítani, hiszen egy
@@ -1829,7 +1829,7 @@ Lettországot. Szlovákia szűk háromszor nagyobb ország lélekszámban (5,5
 is (31100 és 13700). Ezért kerültek szinte pontosan egymás fölé: a
 lélekszámra vetített többlethalálozásaik nagyon pontosan egyeznek. Igen
 ám, de Lettországban sokkal nagyobb a várt halandóság! A járvány
-időszaka alatt kumuláltan 90200 fő, míg Szlovákiában 178500 fő (ne
+időszaka alatt kumuláltan 90200 fő, míg Szlovákiában 178400 fő (ne
 felejtsük el, hogy Szlovákia majdnem háromszor akkora lélekszámmal bír).
 Ez az alapján sem meglepő, hogy Lettországban egyszerűen nagyobb a nyers
 halandóság, például a koronavírus-járványt megelőző 5 évben 14.6/1000
@@ -2090,7 +2090,7 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2026-08-07. A többlethalálozást
+A számítások aktualizálásának dátuma: 2026-08-17. A többlethalálozást
 számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
@@ -2112,7 +2112,10 @@ A mortalitási adatokat az Eurostat-tól kérjük le (a `demo_r_mwk_ts`
 használva az országos, és a `demo_r_mwk3_ts`
 [adatbázist](https://ec.europa.eu/eurostat/databrowser/view/demo_r_mwk3_ts/default/table)
 használva a regionális adatokhoz), az `eurostat` csomag használatával,
-majd leszűrjük az adattáblákat és kikódoljuk a szükséges változókat:
+ezt kiegészítjük a KSH adataival (STADAT [22.2.1.2-es
+tábla](https://www.ksh.hu/stadat_files/nep/hu/nep0065.html)), mivel az
+jellemzően hamarabb frissül mint az Eurostat, végül leszűrjük az
+adattáblákat és kikódoljuk a szükséges változókat:
 
 ``` r
 RawData <- as.data.table(eurostat::get_eurostat("demo_r_mwk_05", use.data.table = TRUE))
@@ -2503,7 +2506,7 @@ pargrid <- pargrid[substring(geo, 1, 2) == "HU" | ED != "Flu"]
 cl <- parallel::makeCluster(parallel::detectCores() - 1)
 parallel::clusterExport(cl, c("RawData", "pargrid", "exclude_dates"), envir = environment())
 
-res <- parallel::parLapplyLB(cl, 1:nrow(pargrid), function(i) {
+res <- parallel::parLapplyLB(cl, 1:nrow(pargrid), chunk.size = 1, function(i) {
   geodat <- RawData[RawData$geo == pargrid$geo[i] & RawData$age == pargrid$age[i],]
   with(excessmort::excess_model(geodat, start = min(geodat$date), end = max(geodat$date),
                                 model = pargrid$model[i],
