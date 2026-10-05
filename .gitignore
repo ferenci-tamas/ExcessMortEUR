@@ -52,3 +52,7 @@ ExcessMortEUR_full_data.csv
 .positai
 
 /.luarc.json
+
+README.html
+/README_files/figure-html
+/README_files/libs

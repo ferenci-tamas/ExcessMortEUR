@@ -1186,7 +1186,7 @@ adatokat, tehát a fenti ábra jobb szélét, a záráskor, 2023. júliusában
 
 Látható, hogy Magyarország a legkedvezőtlenebb harmad elején-közepén
 van. Hogy egy számszerű érték is szerepeljen: a kumulált
-többlethalálozásunk a járvány alatt ex post számításban 52700 fő volt.
+többlethalálozásunk a járvány alatt ex post számításban 53400 fő volt.
 
 Látványos lehet ugyanezeket az adatokat térképen is ábrázolni. Itt ugyan
 az értékeket nehezebb leolvasni, illetve összehasonlítani, hiszen egy
@@ -2090,7 +2090,7 @@ hogy ezzel is szeretném segíteni a többi kutatót és az érdeklődő
 laikusokat hasonló számítások elvégézésében, mivel itt látnak egy
 lehetséges példát.
 
-A számítások aktualizálásának dátuma: 2026-08-17. A többlethalálozást
+A számítások aktualizálásának dátuma: 2026-09-28. A többlethalálozást
 számító csomag (`excessmort`) verziószáma 0.8.2.
 
 Elsőként betöltjük a szükséges könyvtárakat, elvégzünk pár egyéb
